@@ -30,7 +30,7 @@ See [docs/requirements.md](docs/requirements.md) for the requirements and the pl
 
 ## Development
 
-Requirements: Node.js 26 and pnpm (`corepack enable`).
+Requirements: Node.js 26 and pnpm 12 (`npm install --global pnpm@12.16.1`; Node.js 26 has no corepack).
 
 ```sh
 pnpm install

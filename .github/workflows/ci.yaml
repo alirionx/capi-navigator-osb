@@ -17,7 +17,8 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-      - run: corepack enable
+      # Node.js 26 ships without corepack: pnpm in the version of package.json.
+      - run: npm install --global pnpm@12.16.1
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
