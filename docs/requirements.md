@@ -25,22 +25,28 @@ shared clusters and no state in the broker.
 
 ## 2. CAPI Navigator side (already built, FP-34)
 
-The broker needs CAPI Navigator with FP-34 (first release after 0.15.0). Endpoints it uses; check
-the exact schemas in CAPI Navigator's `docs/api/openapi.json`:
+The broker needs CAPI Navigator with FP-34 (first release after 0.15.0; until then a pinned
+commit, [ADR-0005](adr/0005-corrections-from-the-handover-review.md)). Endpoints it uses; check the exact schemas in CAPI Navigator's
+`docs/api/openapi.json`:
 
 | Purpose    | Endpoint                                                                         |
 | ---------- | -------------------------------------------------------------------------------- |
 | Plans      | `GET /api/blueprints` (with `parametersSchema`, JSON Schema draft-04)            |
 | Create     | `POST /api/blueprints/{blueprint}/clusters` `{name, parameters, labels}`         |
-| Find       | `GET /api/connections/{connection}/clusters?labelSelector=…`                     |
+| Find       | `GET /api/connections/{connection}/clusters?labelSelector=…` (1)                 |
 | Status     | the cluster summary from the list (`phase`, `ready`, `deletion`, `blueprint`)    |
+| Failure    | `GET /api/connections/{c}/clusters/{ns}/{name}` (conditions with `message`)      |
 | Kubeconfig | `GET /api/connections/{c}/clusters/{ns}/{name}/kubeconfig` (text, audited)       |
 | Delete     | `POST /api/connections/{c}/clusters/{ns}/{name}/delete` `{confirmName, cleanup}` |
 
+(1) `labelSelector` is not yet a documented parameter in the OpenAPI document
+([ADR-0005](adr/0005-corrections-from-the-handover-review.md)).
+
 Authentication: `Authorization: Bearer capin_…`, the token of a **technical user** with a role that
-has `view`, `clusters.create`, `clusters.delete` and `clusters.kubeconfig`, limited to the
-connection and namespace(s) of the offered blueprints. Every call is audited in CAPI Navigator under
-this user and token name.
+has `view`, `clusters.create`, `clusters.delete` and `clusters.kubeconfig`. `view` needs an
+unlimited role assignment (the user can read all clusters); the other three are limited to the
+connection and namespace(s) of the offered blueprints ([ADR-0005](adr/0005-corrections-from-the-handover-review.md)). Every call is audited in CAPI
+Navigator under this user and token name.
 
 Behaviour of the app the broker relies on:
 
@@ -61,7 +67,9 @@ Cloud Controller ──OSB API v2.17 (basic auth)──▶ Broker (stateless) �
 
 - One service offering, configured by the operator (name, ID, description); defaults in
   [ADR-0003](adr/0003-offering-and-label-prefix-defaults.md).
-- One plan per blueprint of the configured connection (optionally filtered, OSB1-F-04).
+- One plan per blueprint whose `spec.connection` is the configured connection (optionally
+  filtered, OSB1-F-04). The namespace of an instance is the one of its cluster, from the blueprint
+  ([ADR-0005](adr/0005-corrections-from-the-handover-review.md)).
 - Plan ID: UUID v5 of the offering ID and the blueprint name, so it stays stable.
 - Cluster name of an instance: `cf-` followed by the instance ID without hyphens (35 characters;
   CAPI Navigator allows 40). The same instance ID always gives the same name.
@@ -128,7 +136,8 @@ Cloud Controller ──OSB API v2.17 (basic auth)──▶ Broker (stateless) �
 - **OSB2-F-04** MUST pass the context fields only as labels; the organization and space names are
   not stored (they may change).
 - **OSB2-F-05** MUST answer `last_operation` from the cluster summary found by label:
-  - provision: `ready` → `succeeded`; phase `Failed` → `failed` with the app's message;
+  - provision: `ready` → `succeeded`; phase `Failed` → `failed` with the message of the first
+    `False` condition of the cluster status ([ADR-0005](adr/0005-corrections-from-the-handover-review.md));
     otherwise `in progress` with a short description (phase, machines ready).
   - deprovision: cluster still listed → `in progress` (`deletion.phase` as description), phase
     `cleanup-timeout` → `failed` with a hint; cluster gone → `410 Gone`.
@@ -183,8 +192,8 @@ ConcurrencyError`), then answer `201` with `credentials`:
 ## 6. Non-functional requirements
 
 - **NF-01** Stateless; several replicas possible.
-- **NF-02** At most one CAPI Navigator call per OSB request plus the cached catalog; no polling of
-  its own.
+- **NF-02** A fixed, small number of CAPI Navigator calls per OSB request (at most three), the
+  catalog from the cache; no polling of its own ([ADR-0005](adr/0005-corrections-from-the-handover-review.md)).
 - **NF-03** Test coverage of the request handling ≥ 80 % lines.
 - **NF-04** Pinned dependency versions; image built in CI on tags.
 - **NF-05** License Apache-2.0 (like `capi-navigator-images`), unless decided otherwise.
