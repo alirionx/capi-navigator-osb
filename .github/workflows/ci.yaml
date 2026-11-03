@@ -1,0 +1,29 @@
+# OSB0-F-06: lint, typecheck and tests (against the fake of the CAPI Navigator API).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      # OSB0-F-02: the client types match the pinned OpenAPI document of CAPI Navigator.
+      - name: generated client types are up to date
+        run: pnpm api:types && git diff --exit-code src/capi/schema.generated.ts
+      # NF-03: fails below 80 % line coverage.
+      - run: pnpm test:coverage
+      - run: pnpm build

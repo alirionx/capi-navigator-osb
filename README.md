@@ -1,6 +1,7 @@
 # CAPI Navigator Service Broker
 
-> **Status:** not started yet – this is a placeholder.
+> **Status:** in development. The scaffold (pack OSB-0) is done; the OSB endpoints follow in
+> OSB-1 to OSB-3. Not usable with Cloud Foundry yet.
 
 An [Open Service Broker](https://www.openservicebrokerapi.org/) (API v2.17) that lets Cloud Foundry
 users order Kubernetes clusters from [CAPI Navigator](https://github.com/alirionx/capi-navigator).
@@ -13,4 +14,35 @@ users order Kubernetes clusters from [CAPI Navigator](https://github.com/alirion
 The broker is deliberately small and stateless: a thin translation layer between the OSB API and
 the REST API of CAPI Navigator. It stores no state of its own.
 
-See [docs/requirements.md](docs/requirements.md) for the requirements and the plan.
+See [docs/requirements.md](docs/requirements.md) for the requirements and the plan, and
+[docs/adr/](docs/adr/) for the decisions.
+
+## Development
+
+Requirements: Node.js 26 and pnpm (`corepack enable`).
+
+```sh
+pnpm install
+cp .env.example .env   # fill in CAPI Navigator URL, token and broker credentials
+pnpm dev               # broker on http://localhost:8080, Swagger UI on /docs
+```
+
+| Command              | What it does                                                    |
+| -------------------- | --------------------------------------------------------------- |
+| `pnpm test`          | Tests against a fake of the CAPI Navigator API                  |
+| `pnpm test:coverage` | Tests with coverage (at least 80 % lines)                       |
+| `pnpm lint`          | ESLint and Prettier                                             |
+| `pnpm typecheck`     | TypeScript                                                      |
+| `pnpm build`         | Compiles to `dist/`; start with `pnpm start`                    |
+| `pnpm api:update`    | Moves the supported CAPI Navigator API to another commit or tag |
+
+The broker talks to CAPI Navigator only through its REST API, with the token of a technical user.
+The supported API version is pinned in [api/README.md](api/README.md).
+
+Endpoints without authentication: `/healthz`, `/readyz` (CAPI Navigator reachable, token valid),
+`/docs` (Swagger UI) and `/docs/json` (OpenAPI document). Everything under `/v2` needs the broker
+credentials and the header `X-Broker-API-Version`.
+
+## License
+
+[Apache-2.0](LICENSE)
