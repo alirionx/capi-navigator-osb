@@ -59,13 +59,15 @@ Cloud Controller ──OSB API v2.17 (basic auth)──▶ Broker (stateless) �
                                                                                       └─ Cluster API
 ```
 
-- One service offering, configured by the operator (name, ID, description).
+- One service offering, configured by the operator (name, ID, description); defaults in
+  [ADR-0003](adr/0003-offering-and-label-prefix-defaults.md).
 - One plan per blueprint of the configured connection (optionally filtered, OSB1-F-04).
 - Plan ID: UUID v5 of the offering ID and the blueprint name, so it stays stable.
 - Cluster name of an instance: `cf-` followed by the instance ID without hyphens (35 characters;
   CAPI Navigator allows 40). The same instance ID always gives the same name.
-- Labels set at creation, under a configurable prefix (default `osb-broker/`; never
-  `capi-navigator.io/` or `cluster.x-k8s.io/`, which the app refuses):
+- Labels set at creation, under a configurable prefix without the trailing slash (default
+  `osb.capi-navigator.io`, [ADR-0003](adr/0003-offering-and-label-prefix-defaults.md); never
+  `capi-navigator.io` or `cluster.x-k8s.io`, which the app refuses):
 
 | Label                  | Value                                                                                    |
 | ---------------------- | ---------------------------------------------------------------------------------------- |
@@ -213,6 +215,7 @@ Ask one at a time, with a recommendation:
    image for Docker, Podman (Compose) and Kubernetes (Helm chart), no CF app
    ([ADR-0002](adr/0002-container-image-with-helm-and-compose.md)).
 3. ~~Repository name and license.~~ Decided: `capi-navigator-osb`, Apache-2.0 (NF-05).
-4. Offering name and ID, label prefix.
+4. ~~Offering name and ID, label prefix.~~ Decided: `kubernetes-cluster`, a fixed default ID,
+   prefix `osb.capi-navigator.io` ([ADR-0003](adr/0003-offering-and-label-prefix-defaults.md)).
 5. The exact answer to missing or old `X-Broker-API-Version` (`400` vs `412`) and the mapping of
    app blockers (OSB2-F-03).
