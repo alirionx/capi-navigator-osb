@@ -4,6 +4,7 @@ import { type ApiErrorBody, type CapiClient, type ClusterSummary } from '../capi
 import type { Config } from '../config.js';
 import { describeError } from '../probes.js';
 import { CatalogUnavailableError, type CatalogService } from './catalog.js';
+import { appFailure, callApp } from './app-calls.js';
 import { OsbFailure } from './errors.js';
 
 export interface OsbResult {
@@ -28,9 +29,6 @@ const ASYNC_REQUIRED = new OsbFailure(
   'This service creates and deletes clusters asynchronously; the platform must send accepts_incomplete=true.',
   'AsyncRequired',
 );
-const UNREACHABLE = 'CAPI Navigator is not reachable; try again later.';
-const TOKEN_REFUSED =
-  'CAPI Navigator refuses the token of the broker; ask the operator of the broker.';
 
 /** Cluster name of an instance (section 3, ADR-0008): `cf-` plus the UUID without hyphens. */
 export const clusterName = (instanceId: string) =>
@@ -86,7 +84,7 @@ export class InstanceService {
 
   /** The cluster of an instance, found by its instance label. */
   async find(instanceId: string): Promise<ClusterSummary | undefined> {
-    const { data, error, response } = await this.call('looking up the instance', () =>
+    const { data, error, response } = await callApp(this.log, 'looking up the instance', () =>
       this.capi.GET('/api/connections/{connection}/clusters', {
         params: {
           path: { connection: this.config.capi.connection },
@@ -94,7 +92,7 @@ export class InstanceService {
         },
       }),
     );
-    if (!data) throw this.appFailure('looking up the instance', response.status, error);
+    if (!data) throw appFailure(this.log, 'looking up the instance', response.status, error);
     if (data.length > 1) {
       this.log.warn({ instanceId, clusters: data.map((c) => c.name) }, 'several clusters found');
     }
@@ -144,7 +142,7 @@ export class InstanceService {
       labels[this.label('space-guid')] = spaceGuid;
     }
 
-    const { data, error, response } = await this.call('creating the cluster', () =>
+    const { data, error, response } = await callApp(this.log, 'creating the cluster', () =>
       this.capi.POST('/api/blueprints/{blueprint}/clusters', {
         params: { path: { blueprint: entry.blueprint.name } },
         body: { name: clusterName(instanceId), parameters: req.parameters ?? {}, labels },
@@ -171,7 +169,7 @@ export class InstanceService {
         );
       }
       default:
-        throw this.appFailure('creating the cluster', response.status, error);
+        throw appFailure(this.log, 'creating the cluster', response.status, error);
     }
   }
 
@@ -196,7 +194,7 @@ export class InstanceService {
     const accepted = { status: 202, body: { operation: 'deprovision' } };
     if (cluster.deletion) return accepted;
 
-    const { data, error, response } = await this.call('deleting the cluster', () =>
+    const { data, error, response } = await callApp(this.log, 'deleting the cluster', () =>
       this.capi.POST('/api/connections/{connection}/clusters/{namespace}/{name}/delete', {
         params: {
           path: {
@@ -216,7 +214,7 @@ export class InstanceService {
         appDescription(error, 'CAPI Navigator cannot delete the cluster now.'),
       );
     }
-    throw this.appFailure('deleting the cluster', response.status, error);
+    throw appFailure(this.log, 'deleting the cluster', response.status, error);
   }
 
   /** OSB2-F-05. */
@@ -287,24 +285,6 @@ export class InstanceService {
       this.log.warn({ err: describeError(err) }, 'cluster status not readable');
       return fallback;
     }
-  }
-
-  private async call<T>(action: string, fn: () => Promise<T>): Promise<T> {
-    try {
-      return await fn();
-    } catch (err) {
-      this.log.warn({ err: describeError(err), action }, 'CAPI Navigator not reachable');
-      throw new OsbFailure(500, UNREACHABLE);
-    }
-  }
-
-  private appFailure(action: string, status: number, error?: ApiErrorBody): OsbFailure {
-    this.log.warn({ action, capiStatus: status, message: error?.message }, 'CAPI Navigator error');
-    if (status === 401 || status === 403) return new OsbFailure(500, TOKEN_REFUSED);
-    return new OsbFailure(
-      500,
-      `CAPI Navigator answered ${status} while ${action}${error?.message ? `: ${error.message}` : ''}.`,
-    );
   }
 }
 

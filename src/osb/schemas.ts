@@ -158,3 +158,49 @@ export const LastOperation = {
 } as const;
 
 export const Empty = { type: 'object', additionalProperties: false } as const;
+
+export const BindingParams = {
+  type: 'object',
+  properties: {
+    instance_id: { type: 'string', description: 'Instance ID (a UUID).' },
+    binding_id: { type: 'string', description: 'Binding ID (a UUID).' },
+  },
+  required: ['instance_id', 'binding_id'],
+} as const;
+
+export const BindBody = {
+  type: 'object',
+  properties: {
+    service_id: { type: 'string' },
+    plan_id: { type: 'string' },
+    parameters: { type: 'object', additionalProperties: true, description: 'Must be empty.' },
+    app_guid: { type: 'string' },
+    bind_resource: { type: 'object', additionalProperties: true },
+    context: { type: 'object', additionalProperties: true },
+  },
+  required: ['service_id', 'plan_id'],
+} as const;
+
+export const UnbindQuery = {
+  type: 'object',
+  properties: { service_id: { type: 'string' }, plan_id: { type: 'string' } },
+  required: ['service_id', 'plan_id'],
+} as const;
+
+export const Binding = {
+  type: 'object',
+  properties: {
+    credentials: {
+      type: 'object',
+      description: 'Admin kubeconfig of the cluster; valid until the instance is deleted.',
+      properties: {
+        kubeconfig: { type: 'string' },
+        server: { type: 'string', description: 'URL of the Kubernetes API server.' },
+        cluster: { type: 'string', description: 'Name of the cluster in CAPI Navigator.' },
+        namespace: { type: 'string', description: 'Namespace of the cluster in CAPI Navigator.' },
+      },
+      required: ['kubeconfig', 'cluster', 'namespace'],
+    },
+  },
+  required: ['credentials'],
+} as const;

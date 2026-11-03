@@ -2,9 +2,13 @@ import type { FastifyInstance } from 'fastify';
 import type { Config } from '../config.js';
 import { CatalogUnavailableError, type CatalogService } from './catalog.js';
 import { OsbFailure, sendOsbError } from './errors.js';
+import type { BindingService, BindRequest } from './bindings.js';
 import type { InstanceService, ProvisionRequest } from './instances.js';
 import {
   AcceptsIncompleteQuery,
+  BindBody,
+  Binding,
+  BindingParams,
   Catalog,
   DeprovisionQuery,
   Empty,
@@ -14,6 +18,7 @@ import {
   Operation,
   OsbError,
   ProvisionBody,
+  UnbindQuery,
   osbRoute,
 } from './schemas.js';
 
@@ -22,9 +27,14 @@ type InstanceRoute = { Params: { instance_id: string } };
 /** The OSB routes inside the guarded `/v2` scope. */
 export function registerOsbRoutes(
   v2: FastifyInstance,
-  deps: { config: Config; catalog: CatalogService; instances: InstanceService },
+  deps: {
+    config: Config;
+    catalog: CatalogService;
+    instances: InstanceService;
+    bindings: BindingService;
+  },
 ): void {
-  const { config, catalog, instances } = deps;
+  const { config, catalog, instances, bindings } = deps;
 
   v2.get(
     '/catalog',
@@ -128,6 +138,42 @@ export function registerOsbRoutes(
         'Updates are not supported: plan and parameters of a cluster cannot change. ' +
           'Create a new service instance instead.',
       );
+    },
+  );
+
+  type BindingRoute = { Params: { instance_id: string; binding_id: string } };
+
+  v2.put<BindingRoute & { Body: BindRequest }>(
+    '/service_instances/:instance_id/service_bindings/:binding_id',
+    {
+      schema: {
+        ...osbRoute,
+        summary: 'Bind: the admin kubeconfig of the cluster, synchronously (OSB3-F-01)',
+        params: BindingParams,
+        body: BindBody,
+        response: { 201: Binding, '4xx': OsbError, '5xx': OsbError },
+      },
+    },
+    async (req, reply) => {
+      const r = await bindings.bind(req.params.instance_id, req.params.binding_id, req.body);
+      return reply.code(r.status).send(r.body);
+    },
+  );
+
+  v2.delete<BindingRoute & { Querystring: { service_id: string; plan_id: string } }>(
+    '/service_instances/:instance_id/service_bindings/:binding_id',
+    {
+      schema: {
+        ...osbRoute,
+        summary: 'Unbind: nothing to revoke, the kubeconfig stays valid (OSB3-F-03)',
+        params: BindingParams,
+        querystring: UnbindQuery,
+        response: { 200: Empty, '4xx': OsbError },
+      },
+    },
+    async (_req, reply) => {
+      const r = bindings.unbind();
+      return reply.code(r.status).send(r.body);
     },
   );
 }
