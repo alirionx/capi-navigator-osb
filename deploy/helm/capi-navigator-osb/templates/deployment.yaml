@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "osb.fullname" . }}
+  labels: {{- include "osb.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: {{- include "osb.selector" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "osb.selector" . | nindent 8 }}
+      annotations:
+        # Restart on changed configuration or secrets created by the chart.
+        checksum/config: {{ toJson .Values.config | sha256sum }}
+        checksum/secret: {{ toJson .Values.secrets | sha256sum }}
+    spec:
+      automountServiceAccountToken: false # the broker never talks to Kubernetes (hard rule 2)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: broker
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: CAPIN_URL
+              value: {{ required "config.CAPIN_URL is required" .Values.config.CAPIN_URL | quote }}
+            - name: CAPIN_CONNECTION
+              value: {{ required "config.CAPIN_CONNECTION is required" .Values.config.CAPIN_CONNECTION | quote }}
+            {{- range $key, $value := omit .Values.config "CAPIN_URL" "CAPIN_CONNECTION" "PORT" }}
+            - name: {{ $key }}
+              value: {{ $value | toString | quote }}
+            {{- end }}
+            - name: PORT
+              value: "8080"
+            - name: CAPIN_TOKEN_FILE
+              value: /run/secrets/broker/capin-token
+            - name: BROKER_PASSWORD_FILE
+              value: /run/secrets/broker/broker-password
+          ports:
+            - name: http
+              containerPort: 8080
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 20
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            periodSeconds: 15
+            failureThreshold: 2
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - name: secrets
+              mountPath: /run/secrets/broker
+              readOnly: true
+      volumes:
+        - name: secrets
+          secret:
+            secretName: {{ include "osb.secretName" . }}
+            defaultMode: 0400
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}

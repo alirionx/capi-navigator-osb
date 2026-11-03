@@ -1,0 +1,9 @@
+The broker runs as {{ include "osb.fullname" . }} in namespace {{ .Release.Namespace }}.
+
+Register it in Cloud Foundry (as admin), with the broker password from the Secret
+{{ include "osb.secretName" . }} (key broker-password):
+
+  cf create-service-broker capi-navigator {{ .Values.config.BROKER_USERNAME | default "broker" }} <password> <URL of the broker>
+  cf enable-service-access {{ .Values.config.OFFERING_NAME | default "kubernetes-cluster" }}
+
+See docs/operations.md of the broker for details.

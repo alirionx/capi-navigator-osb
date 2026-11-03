@@ -1,0 +1,66 @@
+# Release (NF-04): a tag vX.Y.Z publishes the image ghcr.io/<owner>/capi-navigator-osb:X.Y.Z and
+# the Helm chart as OCI artifact ghcr.io/<owner>/charts/capi-navigator-osb:X.Y.Z.
+#
+# To release: set `version` and `appVersion` in deploy/helm/capi-navigator-osb/Chart.yaml to X.Y.Z,
+# commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+  CHART: deploy/helm/capi-navigator-osb
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Tag matches Chart.yaml
+        id: version
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          chart="$(awk '/^version:/ {print $2}' "$CHART/Chart.yaml")"
+          app="$(awk '/^appVersion:/ {print $2}' "$CHART/Chart.yaml")"
+          if [ "$chart" != "$version" ] || [ "$app" != "$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match Chart.yaml (version $chart, appVersion $app)"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.version.outputs.version }}
+            ${{ env.IMAGE }}:latest
+          labels: |
+            org.opencontainers.image.title=capi-navigator-osb
+            org.opencontainers.image.description=Open Service Broker for the cluster blueprints of CAPI Navigator
+            org.opencontainers.image.licenses=Apache-2.0
+          build-args: APP_VERSION=${{ steps.version.outputs.version }}
+      - name: Helm chart as OCI artifact
+        run: |
+          helm package "$CHART" --destination /tmp/chart
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
+          helm push /tmp/chart/capi-navigator-osb-${{ steps.version.outputs.version }}.tgz \
+            "oci://ghcr.io/${{ github.repository_owner }}/charts"

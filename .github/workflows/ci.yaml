@@ -28,3 +28,14 @@ jobs:
       # NF-03: fails below 80 % line coverage.
       - run: pnpm test:coverage
       - run: pnpm build
+      # OSB4-F-01: the Helm chart lints and renders (helm is preinstalled on the runner).
+      - name: Helm chart
+        run: |
+          chart=deploy/helm/capi-navigator-osb
+          helm lint "$chart" --set config.CAPIN_URL=https://c.example.com \
+            --set config.CAPIN_CONNECTION=home --set secrets.existingSecret=s
+          helm template t "$chart" --set config.CAPIN_URL=https://c.example.com \
+            --set config.CAPIN_CONNECTION=home --set secrets.capinToken=x \
+            --set secrets.brokerPassword=y --set ingress.enabled=true > /dev/null
+      - name: Container image builds
+        run: docker build -t capi-navigator-osb:ci .

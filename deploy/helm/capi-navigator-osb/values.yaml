@@ -1,0 +1,50 @@
+# Helm chart of the CAPI Navigator service broker (OSB4-F-01, ADR-0002). Configuration as in
+# docs/operations.md; every key of `config` becomes an environment variable.
+
+image:
+  repository: ghcr.io/alirionx/capi-navigator-osb
+  # Defaults to the appVersion of the chart.
+  tag: ''
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+# Environment variables of the broker (OSB0-F-01). CAPIN_URL and CAPIN_CONNECTION are required;
+# the token and the broker password come from `secrets`, never from here.
+config:
+  CAPIN_URL: ''
+  CAPIN_CONNECTION: ''
+  BROKER_USERNAME: broker
+  # OFFERING_NAME: kubernetes-cluster
+  # OFFERING_ID: 0b0c9e40-7db5-45ae-a810-f4459a2fad3b   # never change after the first instance
+  # LABEL_PREFIX: osb.capi-navigator.io                 # never change after the first instance
+  # BLUEPRINT_FILTER: small,cf-*
+  # LOG_LEVEL: info
+  # SWAGGER_UI_ENABLED: 'true'
+
+secrets:
+  # Name of an existing Secret with the keys `capin-token` and `broker-password`. If empty, the
+  # chart creates one from the two values below.
+  existingSecret: ''
+  capinToken: ''
+  brokerPassword: ''
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  className: ''
+  annotations: {}
+  host: broker.example.com
+  # Secret with the TLS certificate; Cloud Foundry should reach the broker over HTTPS.
+  tlsSecret: ''
+
+resources:
+  requests: { cpu: 50m, memory: 96Mi }
+  limits: { memory: 256Mi }
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
