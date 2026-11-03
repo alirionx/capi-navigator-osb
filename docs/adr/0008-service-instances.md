@@ -20,7 +20,7 @@ answers. The Cloud Controller waits 60 s for a broker by default.
   `400`. The cluster name is `cf-` plus the 32 hex digits in lower case.
 - **Parameters hash:** the first 32 hex digits of SHA-256 over `<plan ID>\n<canonical JSON>`, where
   the canonical JSON of the parameters (`{}` if none) sorts object keys recursively. The same
-  order with other key order or whitespace gives the same hash.
+  parameters in another key order or with other whitespace give the same hash.
 - **Repeated provision** of an instance whose cluster is being deleted → `409`.
 - **Slow deletions:** the broker waits at most 45 s for `POST …/delete`. If the app has not
   answered by then, the broker answers `202` with `operation: "deprovision"` anyway: the app goes
