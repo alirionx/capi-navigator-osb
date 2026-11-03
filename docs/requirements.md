@@ -87,8 +87,9 @@ Cloud Controller ──OSB API v2.17 (basic auth)──▶ Broker (stateless) �
 - **OSB0-F-02** MUST use a typed client for the CAPI Navigator API, generated from or checked
   against its `openapi.json` of the supported release.
 - **OSB0-F-03** MUST protect all `/v2/*` endpoints with basic auth (constant-time comparison) and
-  answer `412` when `X-Broker-API-Version` is missing or older than 2.13 (or `400` per spec when
-  missing; decide in the first session), and echo `X-Broker-API-Request-Identity`.
+  answer `400` when `X-Broker-API-Version` is missing and `412` when it is older than 2.13
+  ([ADR-0004](adr/0004-version-header-and-app-blockers.md)), and echo
+  `X-Broker-API-Request-Identity`.
 - **OSB0-F-04** MUST offer `/healthz` (process) and `/readyz` (CAPI Navigator reachable with the
   token) without auth.
 - **OSB0-F-05** MUST log every request with method, path, instance and binding ID, the
@@ -120,9 +121,10 @@ Cloud Controller ──OSB API v2.17 (basic auth)──▶ Broker (stateless) �
   progress) or `200` (ready); found with another hash → `409`.
 - **OSB2-F-03** MUST map errors of the app to OSB answers that leave nothing behind (4xx rule of
   the spec): `400` (parameters) → `400` with the app's message as `description`; `409` with
-  blockers (e.g. provider not ready) → an error answer with the app's message and hint, the exact
-  code decided in OSB-2 (open decision 5); unknown plan → `400`; app unreachable or `5xx` → `500`
-  (CF then runs orphan mitigation, which the deprovision of OSB2-F-06 handles).
+  blockers (e.g. provider not ready) → `400` with the app's message and hint as `description`
+  ([ADR-0004](adr/0004-version-header-and-app-blockers.md)); unknown plan → `400`; app
+  unreachable or `5xx` → `500` (CF then runs orphan mitigation, which the deprovision of
+  OSB2-F-06 handles).
 - **OSB2-F-04** MUST pass the context fields only as labels; the organization and space names are
   not stored (they may change).
 - **OSB2-F-05** MUST answer `last_operation` from the cluster summary found by label:
@@ -217,5 +219,6 @@ Ask one at a time, with a recommendation:
 3. ~~Repository name and license.~~ Decided: `capi-navigator-osb`, Apache-2.0 (NF-05).
 4. ~~Offering name and ID, label prefix.~~ Decided: `kubernetes-cluster`, a fixed default ID,
    prefix `osb.capi-navigator.io` ([ADR-0003](adr/0003-offering-and-label-prefix-defaults.md)).
-5. The exact answer to missing or old `X-Broker-API-Version` (`400` vs `412`) and the mapping of
-   app blockers (OSB2-F-03).
+5. ~~The exact answer to missing or old `X-Broker-API-Version` (`400` vs `412`) and the mapping of
+   app blockers (OSB2-F-03).~~ Decided: missing `400`, too old `412`; blockers `400`
+   ([ADR-0004](adr/0004-version-header-and-app-blockers.md)).
