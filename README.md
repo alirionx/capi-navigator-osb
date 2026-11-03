@@ -25,6 +25,9 @@ A binding (or service key) contains the **admin kubeconfig** of the cluster, plu
 - A repeated bind returns the current kubeconfig; Cluster API rotates the client certificate of
   kubeadm clusters, so an old binding may stop working while a new one works.
 
+**Operators:** see [docs/operations.md](docs/operations.md) for setup, configuration, Helm,
+Compose and registration in Cloud Foundry.
+
 See [docs/requirements.md](docs/requirements.md) for the requirements and the plan, and
 [docs/adr/](docs/adr/) for the decisions.
 
