@@ -154,6 +154,9 @@ Details (no stale catalog, empty catalog, bullets, configuration):
 - **OSB2-F-08** MUST refuse `PATCH /v2/service_instances/:id` with `422` and a description that
   updates are not supported.
 
+Details (instance IDs, parameters hash, slow deletions, `RETRY_AFTER_SECONDS`):
+[ADR-0008](adr/0008-service-instances.md).
+
 ### OSB-3: Bind and unbind
 
 - **OSB3-F-01** MUST bind synchronously: the instance must be ready (otherwise `422
