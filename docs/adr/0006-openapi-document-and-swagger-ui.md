@@ -15,8 +15,9 @@ ADR before features beyond them and before extra frameworks.
 - The broker describes its own endpoints (`/v2/*`, `/healthz`, `/readyz`) as an **OpenAPI 3.1
   document**, generated from the route schemas with `@fastify/swagger`, and serves **Swagger UI**
   with `@fastify/swagger-ui` (both official Fastify plugins, assets bundled, no CDN).
-- Paths: the UI at `/docs`, the document at `/docs/openapi.json`. Both need no authentication: they
-  contain no secrets and no data of instances.
+- Paths: the UI at `/docs`, the document at `/docs/json` (the default of `@fastify/swagger-ui`,
+  which also serves `/docs/yaml`). Both need no authentication: they contain no secrets and no data
+  of instances.
 - The document declares basic auth for `/v2/*` and the `X-Broker-API-Version` header (default
   `2.17`), so "Try it out" works with the broker credentials.
 - `SWAGGER_UI_ENABLED` (default `true`) switches the UI and the document off, for operators who

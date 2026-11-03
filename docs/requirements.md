@@ -102,7 +102,7 @@ Cloud Controller ──OSB API v2.17 (basic auth)──▶ Broker (stateless) �
   originating identity's `user_id` and the result; never credentials.
 - **OSB0-F-06** MUST run lint, typecheck and tests in CI; tests run against a fake of the CAPI
   Navigator API.
-- **OSB0-F-07** MUST describe its endpoints as an OpenAPI 3.1 document at `/docs/openapi.json` and
+- **OSB0-F-07** MUST describe its endpoints as an OpenAPI 3.1 document at `/docs/json` and
   serve Swagger UI at `/docs`, without auth, switchable with `SWAGGER_UI_ENABLED`
   ([ADR-0006](adr/0006-openapi-document-and-swagger-ui.md)).
 
