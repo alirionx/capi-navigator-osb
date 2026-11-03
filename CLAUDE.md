@@ -37,7 +37,7 @@ If this file and `docs/requirements.md` disagree, the requirements win. Point ou
 
 | Pack  | Content                                                   | Status  |
 | ----- | --------------------------------------------------------- | ------- |
-| OSB-0 | Scaffold, configuration, App API client, CI               | open    |
+| OSB-0 | Scaffold, configuration, App API client, CI, Swagger UI   | done    |
 | OSB-1 | Catalog from the blueprints                               | open    |
 | OSB-2 | Provision, deprovision, last operation                    | open    |
 | OSB-3 | Bind and unbind                                           | open    |
