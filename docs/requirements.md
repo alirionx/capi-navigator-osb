@@ -170,6 +170,9 @@ ConcurrencyError`), then answer `201` with `credentials`:
   of the space can read it.
 - **OSB3-F-04** MUST never log or cache the kubeconfig.
 
+Details (unknown instance, `ConcurrencyError`, no binding parameters, unbind without `410`):
+[ADR-0009](adr/0009-bindings.md).
+
 ### OSB-4: Packaging, documentation, live acceptance
 
 - **OSB4-F-01** MUST ship a container image (non-root, read-only root file system) and a way to

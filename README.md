@@ -1,7 +1,7 @@
 # CAPI Navigator Service Broker
 
-> **Status:** in development. Catalog, provision, deprovision and last operation work (packs OSB-0
-> to OSB-2); binding (OSB-3) and packaging (OSB-4) follow. Not usable with Cloud Foundry yet.
+> **Status:** in development. All OSB endpoints work (packs OSB-0 to OSB-3); packaging, operator
+> documentation and the live acceptance with Cloud Foundry (OSB-4) follow.
 
 An [Open Service Broker](https://www.openservicebrokerapi.org/) (API v2.17) that lets Cloud Foundry
 users order Kubernetes clusters from [CAPI Navigator](https://github.com/alirionx/capi-navigator).
@@ -13,6 +13,17 @@ users order Kubernetes clusters from [CAPI Navigator](https://github.com/alirion
 
 The broker is deliberately small and stateless: a thin translation layer between the OSB API and
 the REST API of CAPI Navigator. It stores no state of its own.
+
+### What a binding gives you
+
+A binding (or service key) contains the **admin kubeconfig** of the cluster, plus `server`,
+`cluster` and `namespace`. Keep in mind:
+
+- Every developer of the space can read it (`cf service-key`, the app's environment).
+- Unbinding revokes nothing: the kubeconfig stays valid until the service instance is deleted.
+  To rotate it, delete the instance.
+- A repeated bind returns the current kubeconfig; Cluster API rotates the client certificate of
+  kubeadm clusters, so an old binding may stop working while a new one works.
 
 See [docs/requirements.md](docs/requirements.md) for the requirements and the plan, and
 [docs/adr/](docs/adr/) for the decisions.
