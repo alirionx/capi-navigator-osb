@@ -3,7 +3,7 @@
 Things the broker needs or would like from CAPI Navigator. The broker does not change CAPI
 Navigator itself (hard rule 6 in `CLAUDE.md`); the user carries these over to its backlog.
 CNR-01 to CNR-03 were done in CAPI Navigator on 2026-11-04 (commit `2d2faed` and before); CNR-04
-was deferred there as optional.
+was declined: the broker uses the status endpoint.
 
 ## CNR-01: Document `labelSelector` in the OpenAPI document (done)
 
@@ -26,7 +26,7 @@ The broker's default label prefix is `osb.capi-navigator.io`
 `capi-navigator.io/` are reserved; if the reserved prefixes are ever widened to subdomains, this
 prefix needs an exception.
 
-## CNR-04: A message for failed clusters in `ClusterSummary` (deferred)
+## CNR-04: A message for failed clusters in `ClusterSummary` (declined)
 
 `ClusterSummary` has no message, so `last_operation` reads the cluster status once more for a
 failed cluster ([ADR-0005](adr/0005-corrections-from-the-handover-review.md)). A `message` in the
