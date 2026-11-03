@@ -33,14 +33,12 @@ commit, [ADR-0005](adr/0005-corrections-from-the-handover-review.md)). Endpoints
 | ---------- | -------------------------------------------------------------------------------- |
 | Plans      | `GET /api/blueprints` (with `parametersSchema`, JSON Schema draft-04)            |
 | Create     | `POST /api/blueprints/{blueprint}/clusters` `{name, parameters, labels}`         |
-| Find       | `GET /api/connections/{connection}/clusters?labelSelector=…` (1)                 |
+| Find       | `GET /api/connections/{connection}/clusters?labelSelector=…`                     |
 | Status     | the cluster summary from the list (`phase`, `ready`, `deletion`, `blueprint`)    |
 | Failure    | `GET /api/connections/{c}/clusters/{ns}/{name}` (conditions with `message`)      |
 | Kubeconfig | `GET /api/connections/{c}/clusters/{ns}/{name}/kubeconfig` (text, audited)       |
 | Delete     | `POST /api/connections/{c}/clusters/{ns}/{name}/delete` `{confirmName, cleanup}` |
 
-(1) `labelSelector` is not yet a documented parameter in the OpenAPI document
-([ADR-0005](adr/0005-corrections-from-the-handover-review.md)).
 
 Authentication: `Authorization: Bearer capin_…`, the token of a **technical user** with a role that
 has `view`, `clusters.create`, `clusters.delete` and `clusters.kubeconfig`. `view` needs an
@@ -104,6 +102,9 @@ Cloud Controller ──OSB API v2.17 (basic auth)──▶ Broker (stateless) �
   originating identity's `user_id` and the result; never credentials.
 - **OSB0-F-06** MUST run lint, typecheck and tests in CI; tests run against a fake of the CAPI
   Navigator API.
+- **OSB0-F-07** MUST describe its endpoints as an OpenAPI 3.1 document at `/docs/openapi.json` and
+  serve Swagger UI at `/docs`, without auth, switchable with `SWAGGER_UI_ENABLED`
+  ([ADR-0006](adr/0006-openapi-document-and-swagger-ui.md)).
 
 ### OSB-1: Catalog
 

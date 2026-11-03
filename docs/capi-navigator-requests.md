@@ -2,29 +2,31 @@
 
 Things the broker needs or would like from CAPI Navigator. The broker does not change CAPI
 Navigator itself (hard rule 6 in `CLAUDE.md`); the user carries these over to its backlog.
+CNR-01 to CNR-03 were done in CAPI Navigator on 2026-11-04 (commit `2d2faed` and before); CNR-04
+was deferred there as optional.
 
-## CNR-01: Document `labelSelector` in the OpenAPI document (open)
+## CNR-01: Document `labelSelector` in the OpenAPI document (done)
 
 `GET /api/connections/{connection}/clusters` accepts `labelSelector` (FP34-F-10), but
 `docs/api/openapi.json` mentions it only in the description, not as a query parameter. Generated
 clients miss it; the broker adds it by hand
 ([ADR-0005](adr/0005-corrections-from-the-handover-review.md)).
 
-## CNR-02: Fix the technical user in `docs/blueprints.md` (open)
+## CNR-02: Fix the technical user in `docs/blueprints.md` (done)
 
 "Technical user for a client" says all four permissions are limited to the blueprint's connection
 and namespace. `view` needs an unlimited role assignment; only `clusters.create`,
 `clusters.delete` and `clusters.kubeconfig` can be limited
 ([ADR-0005](adr/0005-corrections-from-the-handover-review.md)).
 
-## CNR-03: Keep subdomains of `capi-navigator.io` allowed for user labels (open)
+## CNR-03: Keep subdomains of `capi-navigator.io` allowed for user labels (done)
 
 The broker's default label prefix is `osb.capi-navigator.io`
 ([ADR-0003](adr/0003-offering-and-label-prefix-defaults.md)). Today only keys starting with
 `capi-navigator.io/` are reserved; if the reserved prefixes are ever widened to subdomains, this
 prefix needs an exception.
 
-## CNR-04: A message for failed clusters in `ClusterSummary` (optional)
+## CNR-04: A message for failed clusters in `ClusterSummary` (deferred)
 
 `ClusterSummary` has no message, so `last_operation` reads the cluster status once more for a
 failed cluster ([ADR-0005](adr/0005-corrections-from-the-handover-review.md)). A `message` in the
