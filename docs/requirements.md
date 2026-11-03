@@ -153,7 +153,8 @@ ConcurrencyError`), then answer `201` with `credentials`:
 ### OSB-4: Packaging, documentation, live acceptance
 
 - **OSB4-F-01** MUST ship a container image (non-root, read-only root file system) and a way to
-  run it (decide: Helm chart, CF app manifest or both).
+  run it: a Helm chart for Kubernetes and a Compose file for Docker and Podman
+  ([ADR-0002](adr/0002-container-image-with-helm-and-compose.md)).
 - **OSB4-F-02** MUST document: setup of the technical user and role in CAPI Navigator, broker
   configuration, `cf create-service-broker`, `cf enable-service-access`, an example order with
   parameters, and the limits of section 1.
@@ -208,7 +209,9 @@ Ask one at a time, with a recommendation:
 1. ~~Language and stack: TypeScript/Node.js (same as CAPI Navigator, typed client from its OpenAPI)
    or Go (common in the CF world, existing OSB libraries such as `brokerapi`).~~ Decided:
    TypeScript with Fastify on Node.js 26 ([ADR-0001](adr/0001-typescript-fastify-node-26.md)).
-2. How it runs: container with Helm chart, CF app (`cf push`) or both.
+2. ~~How it runs: container with Helm chart, CF app (`cf push`) or both.~~ Decided: container
+   image for Docker, Podman (Compose) and Kubernetes (Helm chart), no CF app
+   ([ADR-0002](adr/0002-container-image-with-helm-and-compose.md)).
 3. Repository name and license.
 4. Offering name and ID, label prefix.
 5. The exact answer to missing or old `X-Broker-API-Version` (`400` vs `412`) and the mapping of
