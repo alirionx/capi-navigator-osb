@@ -212,7 +212,7 @@ Ask one at a time, with a recommendation:
 2. ~~How it runs: container with Helm chart, CF app (`cf push`) or both.~~ Decided: container
    image for Docker, Podman (Compose) and Kubernetes (Helm chart), no CF app
    ([ADR-0002](adr/0002-container-image-with-helm-and-compose.md)).
-3. Repository name and license.
+3. ~~Repository name and license.~~ Decided: `capi-navigator-osb`, Apache-2.0 (NF-05).
 4. Offering name and ID, label prefix.
 5. The exact answer to missing or old `X-Broker-API-Version` (`400` vs `412`) and the mapping of
    app blockers (OSB2-F-03).
