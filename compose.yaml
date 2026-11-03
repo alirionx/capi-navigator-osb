@@ -1,0 +1,37 @@
+# The broker with Docker Compose or Podman Compose (ADR-0002, docs/operations.md).
+#
+#   1. Configuration in .env (see .env.example); CAPIN_TOKEN and BROKER_PASSWORD are not used here.
+#   2. Token and broker password as files, mode 600, owned by the user that runs the container
+#      (uid 1000): ./secrets/capin-token and ./secrets/broker-password, or other paths in
+#      CAPIN_TOKEN_PATH and BROKER_PASSWORD_PATH.
+#   3. docker compose up -d   (or: podman compose up -d)
+services:
+  broker:
+    image: ghcr.io/alirionx/capi-navigator-osb:${BROKER_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - '${BROKER_PORT:-8080}:8080'
+    environment:
+      CAPIN_URL: ${CAPIN_URL:?set CAPIN_URL in .env}
+      CAPIN_CONNECTION: ${CAPIN_CONNECTION:?set CAPIN_CONNECTION in .env}
+      CAPIN_TOKEN_FILE: /run/secrets/capin_token
+      BROKER_USERNAME: ${BROKER_USERNAME:-broker}
+      BROKER_PASSWORD_FILE: /run/secrets/broker_password
+      OFFERING_NAME: ${OFFERING_NAME:-kubernetes-cluster}
+      OFFERING_ID: ${OFFERING_ID:-0b0c9e40-7db5-45ae-a810-f4459a2fad3b}
+      LABEL_PREFIX: ${LABEL_PREFIX:-osb.capi-navigator.io}
+      BLUEPRINT_FILTER: ${BLUEPRINT_FILTER:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      SWAGGER_UI_ENABLED: ${SWAGGER_UI_ENABLED:-true}
+    secrets:
+      - capin_token
+      - broker_password
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+
+secrets:
+  capin_token:
+    file: ${CAPIN_TOKEN_PATH:-./secrets/capin-token}
+  broker_password:
+    file: ${BROKER_PASSWORD_PATH:-./secrets/broker-password}
