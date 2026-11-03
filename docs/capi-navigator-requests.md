@@ -31,3 +31,14 @@ prefix needs an exception.
 `ClusterSummary` has no message, so `last_operation` reads the cluster status once more for a
 failed cluster ([ADR-0005](adr/0005-corrections-from-the-handover-review.md)). A `message` in the
 summary would save that call.
+
+## CNR-05: Do not block `POST …/delete` while the cleanup starts (open)
+
+`ClusterDeletionService.delete` (`apps/backend/src/clusters/cluster-deletion.service.ts`) first
+tries to start the cleanup in the workload cluster and retries for up to `DELETION_TIMING.startMs`
+(60 s) when its API is not reachable; only then does it set the deletion annotation and answer.
+The Cloud Controller of Cloud Foundry waits 60 s for a broker by default, so a deprovision can time
+out although the deletion goes on. Request: record the deletion (annotation with phase `cleanup`)
+first and start the cleanup in the background, so the endpoint answers at once and the progress
+shows in `deletion`. The broker works around it until then
+([ADR-0008](adr/0008-service-instances.md)).
