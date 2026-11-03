@@ -46,6 +46,7 @@ describe('loadConfig (OSB0-F-01)', () => {
       },
       labelPrefix: 'osb.capi-navigator.io',
       blueprintFilter: [],
+      catalog: { plansFree: true, maxPollingDurationSeconds: 3600, cacheMs: 60000 },
       swaggerUi: true,
     });
   });
@@ -61,6 +62,9 @@ describe('loadConfig (OSB0-F-01)', () => {
       LABEL_PREFIX: 'broker.example.com',
       BLUEPRINT_FILTER: ' small, cf-* ,',
       SWAGGER_UI_ENABLED: 'false',
+      PLANS_FREE: 'no',
+      MAX_POLLING_DURATION_SECONDS: '7200',
+      CATALOG_CACHE_SECONDS: '0',
     });
     expect(c.port).toBe(9000);
     expect(c.logLevel).toBe('debug');
@@ -69,6 +73,7 @@ describe('loadConfig (OSB0-F-01)', () => {
     expect(c.labelPrefix).toBe('broker.example.com');
     expect(c.blueprintFilter).toEqual(['small', 'cf-*']);
     expect(c.swaggerUi).toBe(false);
+    expect(c.catalog).toEqual({ plansFree: false, maxPollingDurationSeconds: 7200, cacheMs: 0 });
   });
 
   it('names every missing variable', () => {

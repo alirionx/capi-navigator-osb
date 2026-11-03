@@ -43,7 +43,14 @@ describe('OSB guard of /v2 (OSB0-F-03, ADR-0004)', () => {
 
   it.each(['2.13', '2.17', '2.18'])('accepts version %s', async (v) => {
     const res = await get(osbHeaders({ 'x-broker-api-version': v }));
-    // No /v2 route exists before OSB-1: the guarded not-found handler answers.
+    expect(res.statusCode).toBe(200);
+  });
+
+  it('guards unknown /v2 paths and answers them in the OSB error format', async () => {
+    const unknown = (headers: Record<string, string>) =>
+      broker.app.inject({ method: 'GET', url: '/v2/unknown', headers });
+    expect((await unknown({})).statusCode).toBe(401);
+    const res = await unknown(osbHeaders());
     expect(res.statusCode).toBe(404);
     expect(res.json()).toEqual({ description: 'This endpoint does not exist.' });
   });

@@ -50,6 +50,9 @@ const EnvSchema = z.object({
     .default('osb.capi-navigator.io'),
   // OSB1-F-04: comma-separated blueprint names; an entry ending with * is a name prefix.
   BLUEPRINT_FILTER: z.string().optional(),
+  PLANS_FREE: booleanFlag.default(true), // OSB1-F-02
+  MAX_POLLING_DURATION_SECONDS: z.coerce.number().int().min(60).max(604800).default(3600), // OSB1-F-03
+  CATALOG_CACHE_SECONDS: z.coerce.number().int().min(0).max(3600).default(60), // OSB1-F-05
 
   SWAGGER_UI_ENABLED: booleanFlag.default(true), // ADR-0006
 });
@@ -63,6 +66,7 @@ export interface Config {
   offering: { name: string; id: string; description: string };
   labelPrefix: string;
   blueprintFilter: string[];
+  catalog: { plansFree: boolean; maxPollingDurationSeconds: number; cacheMs: number };
   swaggerUi: boolean;
 }
 
@@ -139,6 +143,11 @@ export function loadConfig(env: NodeJS.ProcessEnv, options: LoadOptions = {}): C
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean),
+    catalog: {
+      plansFree: e.PLANS_FREE,
+      maxPollingDurationSeconds: e.MAX_POLLING_DURATION_SECONDS,
+      cacheMs: e.CATALOG_CACHE_SECONDS * 1000,
+    },
     swaggerUi: e.SWAGGER_UI_ENABLED,
   };
 }

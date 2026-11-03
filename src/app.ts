@@ -7,9 +7,11 @@ import Fastify, {
 import type { CapiClient } from './capi/client.js';
 import type { Config } from './config.js';
 import { registerDocs } from './docs.js';
+import { CatalogService } from './osb/catalog.js';
 import { sendOsbError } from './osb/errors.js';
 import { registerOsbGuard } from './osb/guard.js';
 import { originatingUser } from './osb/identity.js';
+import { registerOsbRoutes } from './osb/routes.js';
 import { registerProbes } from './probes.js';
 
 export interface AppOptions {
@@ -67,6 +69,8 @@ export async function buildApp({ config, capi, logger }: AppOptions): Promise<Fa
 
   registerProbes(app, capi);
 
+  const catalog = new CatalogService(capi, config, app.log);
+
   await app.register(
     async (v2) => {
       registerOsbGuard(v2, config.broker);
@@ -78,7 +82,7 @@ export async function buildApp({ config, capi, logger }: AppOptions): Promise<Fa
         if (status >= 500) req.log.error({ err }, 'request failed');
         return sendOsbError(reply, status, status < 500 ? err.message : 'Internal broker error.');
       });
-      // OSB-1 to OSB-3 add the routes here.
+      registerOsbRoutes(v2, catalog);
     },
     { prefix: '/v2' },
   );
