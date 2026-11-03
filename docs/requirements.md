@@ -205,8 +205,9 @@ ConcurrencyError`), then answer `201` with `credentials`:
 
 Ask one at a time, with a recommendation:
 
-1. Language and stack: TypeScript/Node.js (same as CAPI Navigator, typed client from its OpenAPI)
-   or Go (common in the CF world, existing OSB libraries such as `brokerapi`).
+1. ~~Language and stack: TypeScript/Node.js (same as CAPI Navigator, typed client from its OpenAPI)
+   or Go (common in the CF world, existing OSB libraries such as `brokerapi`).~~ Decided:
+   TypeScript with Fastify on Node.js 26 ([ADR-0001](adr/0001-typescript-fastify-node-26.md)).
 2. How it runs: container with Helm chart, CF app (`cf push`) or both.
 3. Repository name and license.
 4. Offering name and ID, label prefix.
