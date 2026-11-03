@@ -120,6 +120,9 @@ Cloud Controller ──OSB API v2.17 (basic auth)──▶ Broker (stateless) �
 - **OSB1-F-05** MUST cache the catalog for a short time (default 60 s) so CF polling does not load
   the app.
 
+Details (no stale catalog, empty catalog, bullets, configuration):
+[ADR-0007](adr/0007-catalog-details.md).
+
 ### OSB-2: Provision, deprovision, last operation
 
 - **OSB2-F-01** MUST answer `422 AsyncRequired` when `accepts_incomplete=true` is missing on
