@@ -90,3 +90,71 @@ export const Catalog = {
 
 /** Route options shared by all OSB routes. */
 export const osbRoute = { tags: ['OSB'], security: [{ brokerAuth: [] }], headers: OsbHeaders };
+
+export const InstanceParams = {
+  type: 'object',
+  properties: { instance_id: { type: 'string', description: 'Instance ID (a UUID).' } },
+  required: ['instance_id'],
+} as const;
+
+export const ProvisionBody = {
+  type: 'object',
+  properties: {
+    service_id: { type: 'string' },
+    plan_id: { type: 'string' },
+    parameters: {
+      type: 'object',
+      additionalProperties: true,
+      description: 'Parameters of the plan, see its schema in the catalog.',
+    },
+    context: { type: 'object', additionalProperties: true },
+    organization_guid: { type: 'string' },
+    space_guid: { type: 'string' },
+  },
+  required: ['service_id', 'plan_id'],
+} as const;
+
+export const AcceptsIncompleteQuery = {
+  type: 'object',
+  properties: {
+    accepts_incomplete: {
+      type: 'boolean',
+      description: 'Must be true: the broker works asynchronously.',
+    },
+  },
+} as const;
+
+export const DeprovisionQuery = {
+  type: 'object',
+  properties: {
+    ...AcceptsIncompleteQuery.properties,
+    service_id: { type: 'string' },
+    plan_id: { type: 'string' },
+  },
+  required: ['service_id', 'plan_id'],
+} as const;
+
+export const LastOperationQuery = {
+  type: 'object',
+  properties: {
+    operation: { type: 'string', enum: ['provision', 'deprovision'] },
+    service_id: { type: 'string' },
+    plan_id: { type: 'string' },
+  },
+} as const;
+
+export const Operation = {
+  type: 'object',
+  properties: { operation: { type: 'string', enum: ['provision', 'deprovision'] } },
+} as const;
+
+export const LastOperation = {
+  type: 'object',
+  properties: {
+    state: { type: 'string', enum: ['in progress', 'succeeded', 'failed'] },
+    description: { type: 'string' },
+  },
+  required: ['state'],
+} as const;
+
+export const Empty = { type: 'object', additionalProperties: false } as const;

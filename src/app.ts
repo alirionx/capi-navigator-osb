@@ -8,9 +8,10 @@ import type { CapiClient } from './capi/client.js';
 import type { Config } from './config.js';
 import { registerDocs } from './docs.js';
 import { CatalogService } from './osb/catalog.js';
-import { sendOsbError } from './osb/errors.js';
+import { OsbFailure, sendOsbError } from './osb/errors.js';
 import { registerOsbGuard } from './osb/guard.js';
 import { originatingUser } from './osb/identity.js';
+import { InstanceService } from './osb/instances.js';
 import { registerOsbRoutes } from './osb/routes.js';
 import { registerProbes } from './probes.js';
 
@@ -70,6 +71,7 @@ export async function buildApp({ config, capi, logger }: AppOptions): Promise<Fa
   registerProbes(app, capi);
 
   const catalog = new CatalogService(capi, config, app.log);
+  const instances = new InstanceService(capi, config, catalog, app.log);
 
   await app.register(
     async (v2) => {
@@ -78,11 +80,14 @@ export async function buildApp({ config, capi, logger }: AppOptions): Promise<Fa
         sendOsbError(reply, 404, 'This endpoint does not exist.'),
       );
       v2.setErrorHandler<FastifyError>((err, req, reply) => {
+        if (err instanceof OsbFailure) {
+          return sendOsbError(reply, err.status, err.description, err.error);
+        }
         const status = err.statusCode && err.statusCode >= 400 ? err.statusCode : 500;
         if (status >= 500) req.log.error({ err }, 'request failed');
         return sendOsbError(reply, status, status < 500 ? err.message : 'Internal broker error.');
       });
-      registerOsbRoutes(v2, catalog);
+      registerOsbRoutes(v2, { config, catalog, instances });
     },
     { prefix: '/v2' },
   );

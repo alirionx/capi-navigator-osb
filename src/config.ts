@@ -53,6 +53,7 @@ const EnvSchema = z.object({
   PLANS_FREE: booleanFlag.default(true), // OSB1-F-02
   MAX_POLLING_DURATION_SECONDS: z.coerce.number().int().min(60).max(604800).default(3600), // OSB1-F-03
   CATALOG_CACHE_SECONDS: z.coerce.number().int().min(0).max(3600).default(60), // OSB1-F-05
+  RETRY_AFTER_SECONDS: z.coerce.number().int().min(1).max(3600).default(30), // OSB2-F-07
 
   SWAGGER_UI_ENABLED: booleanFlag.default(true), // ADR-0006
 });
@@ -67,6 +68,7 @@ export interface Config {
   labelPrefix: string;
   blueprintFilter: string[];
   catalog: { plansFree: boolean; maxPollingDurationSeconds: number; cacheMs: number };
+  retryAfterSeconds: number;
   swaggerUi: boolean;
 }
 
@@ -148,6 +150,7 @@ export function loadConfig(env: NodeJS.ProcessEnv, options: LoadOptions = {}): C
       maxPollingDurationSeconds: e.MAX_POLLING_DURATION_SECONDS,
       cacheMs: e.CATALOG_CACHE_SECONDS * 1000,
     },
+    retryAfterSeconds: e.RETRY_AFTER_SECONDS,
     swaggerUi: e.SWAGGER_UI_ENABLED,
   };
 }

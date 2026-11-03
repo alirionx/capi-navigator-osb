@@ -9,6 +9,8 @@ import {
   type TestBroker,
 } from './support/broker.js';
 
+const INSTANCE = '5a8b1e4c-0d3f-4c2a-9b7e-1f2d3c4b5a69';
+
 const cfIdentity = (json: object) =>
   `cloudfoundry ${Buffer.from(JSON.stringify(json)).toString('base64')}`;
 
@@ -24,7 +26,7 @@ describe('request log (OSB0-F-05)', () => {
   it('logs one line per OSB request with identity and result', async () => {
     await broker.app.inject({
       method: 'GET',
-      url: '/v2/service_instances/i-1/last_operation?operation=provision',
+      url: `/v2/service_instances/${INSTANCE}/last_operation?operation=provision`,
       headers: osbHeaders({
         'x-broker-api-originating-identity': cfIdentity({ user_id: 'u-42' }),
         'x-broker-api-request-identity': 'r-1',
@@ -34,9 +36,10 @@ describe('request log (OSB0-F-05)', () => {
     expect(line).toMatchObject({
       level: 30,
       method: 'GET',
-      path: '/v2/service_instances/i-1/last_operation',
+      path: `/v2/service_instances/${INSTANCE}/last_operation`,
+      instanceId: INSTANCE,
       userId: 'u-42',
-      statusCode: 404,
+      statusCode: 200,
     });
   });
 

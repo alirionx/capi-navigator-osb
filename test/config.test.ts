@@ -47,6 +47,7 @@ describe('loadConfig (OSB0-F-01)', () => {
       labelPrefix: 'osb.capi-navigator.io',
       blueprintFilter: [],
       catalog: { plansFree: true, maxPollingDurationSeconds: 3600, cacheMs: 60000 },
+      retryAfterSeconds: 30,
       swaggerUi: true,
     });
   });

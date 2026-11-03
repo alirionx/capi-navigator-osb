@@ -31,6 +31,15 @@ export class FakeCapiNavigator {
   readonly requests: FakeRequest[] = [];
   /** Answers every request with this status and an ApiErrorBody, if set. */
   failWith?: { status: number; message: string; hint?: string };
+  /**
+   * Called for every authenticated request before its handler: may answer instead of the handler
+   * (status and body), drop the connection ('drop', a network error for the client), change the
+   * state, or wait to simulate a slow app.
+   */
+  intercept?: (req: {
+    method: string;
+    url: string;
+  }) => Promise<{ status: number; body: unknown } | 'drop' | undefined> | undefined;
   private server?: FastifyInstance;
 
   async start(): Promise<string> {
@@ -51,6 +60,13 @@ export class FakeCapiNavigator {
         const { status, message, hint } = this.failWith;
         return reply.code(status).send({ statusCode: status, message, ...(hint ? { hint } : {}) });
       }
+      const answer = await this.intercept?.({ method: req.method, url: req.url });
+      if (answer === 'drop') {
+        reply.hijack();
+        req.raw.socket.destroy();
+        return;
+      }
+      if (answer) return reply.code(answer.status).send(answer.body);
     });
     app.addHook('preHandler', async (req) => {
       const last = this.requests.at(-1);
@@ -158,6 +174,17 @@ export class FakeCapiNavigator {
 
   async stop(): Promise<void> {
     await this.server?.close();
+  }
+
+  /** The cluster with this name in any connection and namespace. */
+  cluster(name: string): FakeCluster | undefined {
+    return this.clusters.find((c) => c.summary.name === name);
+  }
+
+  /** Removes a cluster, as when its deletion finished. */
+  remove(name: string): void {
+    const i = this.clusters.findIndex((c) => c.summary.name === name);
+    if (i >= 0) this.clusters.splice(i, 1);
   }
 
   find(connection: string, namespace: string, name: string): FakeCluster | undefined {

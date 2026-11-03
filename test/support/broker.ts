@@ -30,7 +30,7 @@ export interface TestBroker {
 /** A broker against a fresh fake of CAPI Navigator, with its log captured. */
 export async function startBroker(
   env: Record<string, string> = {},
-  options: { token?: string } = {},
+  options: { token?: string; deleteTimeoutMs?: number } = {},
 ): Promise<TestBroker> {
   const fake = new FakeCapiNavigator();
   const url = await fake.start();
@@ -47,6 +47,7 @@ export async function startBroker(
     url: config.capi.url,
     token: options.token ?? config.capi.token,
     timeoutMs: 2000,
+    ...(options.deleteTimeoutMs ? { deleteTimeoutMs: options.deleteTimeoutMs } : {}),
   });
   const logs: string[] = [];
   const stream = new Writable({

@@ -15,3 +15,15 @@ export function sendOsbError(
   const body: OsbErrorBody = error ? { error, description } : { description };
   return reply.code(status).send(body);
 }
+
+/** A request that ends with an OSB error answer; the `/v2` error handler sends it. */
+export class OsbFailure extends Error {
+  constructor(
+    readonly status: number,
+    readonly description: string,
+    readonly error?: string,
+  ) {
+    super(description);
+    this.name = 'OsbFailure';
+  }
+}
