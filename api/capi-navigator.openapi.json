@@ -431,6 +431,16 @@
         ],
         "summary": "Start the OpenID Connect sign-in; redirects to the provider",
         "description": "`redirect` is the app path to return to after sign-in. 404 without OIDC.\n\nPublic: no session needed.",
+        "parameters": [
+          {
+            "name": "redirect",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "302": {
             "description": "Redirect for the browser; the target is in the Location header.",
@@ -3823,6 +3833,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -4417,6 +4435,14 @@
             "name": "name",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "string"
             }
@@ -5342,6 +5368,16 @@
         ],
         "summary": "Access manifest (ServiceAccount, RBAC) for a management cluster",
         "description": "Query parameter variant: full (default) or minimal.\n\nRequires permission `connections.manage`. This permission needs an unlimited role assignment.",
+        "parameters": [
+          {
+            "name": "variant",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "YAML manifest",

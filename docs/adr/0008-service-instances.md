@@ -34,3 +34,11 @@ answers. The Cloud Controller waits 60 s for a broker by default.
 - Cloud Foundry gets an answer within its timeout even when the cleanup of a broken cluster
   cannot start.
 - A failed deletion behind the timeout shows only after the maximum polling duration.
+
+## Update 2026-11-04: workaround removed
+
+CAPI Navigator implemented CNR-05 in commit `05240f3`: `POST …/delete` records the deletion first
+and starts the cleanup in the background. The broker is pinned to that commit (`api/README.md`);
+the 45 s timeout of the delete call and the `202` after a timeout are removed. The delete call
+uses the normal timeout (`CAPIN_TIMEOUT_SECONDS`); a timeout is answered with `500` like any
+unreachable app, and Cloud Foundry can delete again.

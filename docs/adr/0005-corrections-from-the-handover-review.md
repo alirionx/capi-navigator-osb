@@ -48,7 +48,8 @@ status and delete.
 
 FP-34 is not released yet (latest tag v0.15.1 does not contain it; the OpenAPI document says
 `0.0.0-dev`). Until the first release with FP-34, the client is generated from `openapi.json` at a
-pinned commit of CAPI Navigator (`2d2faed`, recorded in `api/README.md`); the pin moves to the
+pinned commit of CAPI Navigator (first `2d2faed`, since ADR-0008's update `05240f3`; recorded in
+`api/README.md`); the pin moves to the
 release tag as soon as there is one (expected: 0.16.0; the hotfix 0.15.1 does not contain FP-34).
 
 ### 6. Number of app calls per request (NF-02)

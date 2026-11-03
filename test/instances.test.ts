@@ -496,34 +496,6 @@ describe('service instances (OSB-2)', () => {
   });
 });
 
-describe('slow deletion (ADR-0008, CNR-05)', () => {
-  let b: TestBroker;
-  afterEach(() => b.close());
-
-  it('answers 202 when the delete call runs into its timeout', async () => {
-    b = await startBroker({}, { deleteTimeoutMs: 50 });
-    b.fake.blueprints.push(blueprint('small'));
-    await b.app.inject({
-      method: 'PUT',
-      url: `/v2/service_instances/${INSTANCE}?accepts_incomplete=true`,
-      headers: osbHeaders(),
-      payload: provisionBody(),
-    });
-    b.fake.intercept = async ({ url }) => {
-      if (url.endsWith('/delete')) await new Promise((r) => setTimeout(r, 200));
-      return undefined;
-    };
-    const res = await b.app.inject({
-      method: 'DELETE',
-      url: `/v2/service_instances/${INSTANCE}?accepts_incomplete=true&service_id=${OFFERING_ID}&plan_id=${PLAN_ID}`,
-      headers: osbHeaders(),
-    });
-    expect(res.statusCode).toBe(202);
-    expect(res.json()).toEqual({ operation: 'deprovision' });
-    expect(b.logs.some((l) => l.includes('delete call timed out'))).toBe(true);
-  });
-});
-
 describe('helpers (ADR-0008)', () => {
   it('derives the cluster name from the instance ID', () => {
     expect(clusterName('5A8B1E4C-0D3F-4C2A-9B7E-1F2D3C4B5A69')).toBe(CLUSTER);

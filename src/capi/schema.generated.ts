@@ -4550,7 +4550,9 @@ export interface operations {
     };
     Oidc_login: {
         parameters: {
-            query?: never;
+            query?: {
+                redirect?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -6511,7 +6513,9 @@ export interface operations {
     };
     Credentials_lookup: {
         parameters: {
-            query?: never;
+            query?: {
+                region?: string;
+            };
             header?: never;
             path: {
                 connection: string;
@@ -6913,7 +6917,9 @@ export interface operations {
     };
     Operator_remove: {
         parameters: {
-            query?: never;
+            query?: {
+                force?: string;
+            };
             header?: {
                 /** @description CSRF protection for mutating requests with the session cookie; not needed with an API token. */
                 "x-capi-navigator"?: components["parameters"]["Csrf"];
@@ -7379,7 +7385,9 @@ export interface operations {
     };
     Connections_accessManifest: {
         parameters: {
-            query?: never;
+            query?: {
+                variant?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;

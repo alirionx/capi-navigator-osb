@@ -1,11 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { FastifyBaseLogger } from 'fastify';
-import {
-  isTimeout,
-  type ApiErrorBody,
-  type CapiClient,
-  type ClusterSummary,
-} from '../capi/client.js';
+import { type ApiErrorBody, type CapiClient, type ClusterSummary } from '../capi/client.js';
 import type { Config } from '../config.js';
 import { describeError } from '../probes.js';
 import { CatalogUnavailableError, type CatalogService } from './catalog.js';
@@ -192,7 +187,7 @@ export class InstanceService {
       : { status: 202, body: { operation: 'provision' } };
   }
 
-  /** OSB2-F-01, OSB2-F-06, ADR-0008. */
+  /** OSB2-F-01, OSB2-F-06. */
   async deprovision(instanceId: string, acceptsIncomplete: boolean): Promise<OsbResult> {
     if (!acceptsIncomplete) throw ASYNC_REQUIRED;
     if (!UUID.test(instanceId)) return { status: 410, body: {} };
@@ -201,31 +196,18 @@ export class InstanceService {
     const accepted = { status: 202, body: { operation: 'deprovision' } };
     if (cluster.deletion) return accepted;
 
-    let result;
-    try {
-      result = await this.capi.POST(
-        '/api/connections/{connection}/clusters/{namespace}/{name}/delete',
-        {
-          params: {
-            path: {
-              connection: this.config.capi.connection,
-              namespace: cluster.namespace,
-              name: cluster.name,
-            },
+    const { data, error, response } = await this.call('deleting the cluster', () =>
+      this.capi.POST('/api/connections/{connection}/clusters/{namespace}/{name}/delete', {
+        params: {
+          path: {
+            connection: this.config.capi.connection,
+            namespace: cluster.namespace,
+            name: cluster.name,
           },
-          body: { confirmName: cluster.name, cleanup: true, skipDrain: false },
         },
-      );
-    } catch (err) {
-      if (isTimeout(err)) {
-        // ADR-0008: the app goes on deleting; last_operation follows the progress.
-        this.log.warn({ instanceId, cluster: cluster.name }, 'delete call timed out, accepted');
-        return accepted;
-      }
-      this.log.warn({ err: describeError(err) }, 'CAPI Navigator not reachable');
-      throw new OsbFailure(500, UNREACHABLE);
-    }
-    const { data, error, response } = result;
+        body: { confirmName: cluster.name, cleanup: true, skipDrain: false },
+      }),
+    );
     if (data) return accepted;
     if (response.status === 404) return { status: 410, body: {} };
     if (response.status === 400 || response.status === 409) {
