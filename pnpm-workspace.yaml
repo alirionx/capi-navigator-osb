@@ -1,0 +1,3 @@
+allowBuilds:
+  # Verifies its platform binary (tsx, vitest).
+  esbuild: true

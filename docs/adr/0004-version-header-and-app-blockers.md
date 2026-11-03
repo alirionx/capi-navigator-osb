@@ -17,12 +17,12 @@ only for `AsyncRequired` and `MaintenanceInfoConflict`. The Cloud Controller of 
 (`lib/services/service_brokers/v2/response_parser.rb`, `parse_provision`, read on 2026-11-04)
 treats the codes as follows:
 
-| Broker answer                    | Cloud Controller                                             |
-| -------------------------------- | ------------------------------------------------------------ |
-| `409`                            | `ServiceBrokerConflict` (the instance already exists)        |
-| `422` with an unknown `error`    | `ServiceBrokerBadResponse` (the broker misbehaves)           |
-| other `4xx` (e.g. `400`)         | `ServiceBrokerRequestRejected`, shows the `description`      |
-| `5xx`                            | `ServiceBrokerBadResponse`, may start orphan mitigation      |
+| Broker answer                 | Cloud Controller                                        |
+| ----------------------------- | ------------------------------------------------------- |
+| `409`                         | `ServiceBrokerConflict` (the instance already exists)   |
+| `422` with an unknown `error` | `ServiceBrokerBadResponse` (the broker misbehaves)      |
+| other `4xx` (e.g. `400`)      | `ServiceBrokerRequestRejected`, shows the `description` |
+| `5xx`                         | `ServiceBrokerBadResponse`, may start orphan mitigation |
 
 ## Decision
 

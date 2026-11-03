@@ -22,12 +22,12 @@ allowed.
 
 ## Decision
 
-| Setting              | Default                                                 |
-| -------------------- | ------------------------------------------------------- |
-| Offering name        | `kubernetes-cluster`                                    |
-| Offering ID          | `0b0c9e40-7db5-45ae-a810-f4459a2fad3b`                  |
-| Offering description | `Kubernetes clusters from CAPI Navigator blueprints`    |
-| Label prefix         | `osb.capi-navigator.io` (without the trailing slash)    |
+| Setting              | Default                                              |
+| -------------------- | ---------------------------------------------------- |
+| Offering name        | `kubernetes-cluster`                                 |
+| Offering ID          | `0b0c9e40-7db5-45ae-a810-f4459a2fad3b`               |
+| Offering description | `Kubernetes clusters from CAPI Navigator blueprints` |
+| Label prefix         | `osb.capi-navigator.io` (without the trailing slash) |
 
 Label keys are `<prefix>/<key>`, e.g. `osb.capi-navigator.io/instance-id`. The configured prefix
 must be a DNS subdomain and must not be or start with one of the reserved prefixes; the broker

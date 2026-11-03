@@ -1,0 +1,46 @@
+{
+  "name": "capi-navigator-osb",
+  "version": "0.0.0-dev",
+  "description": "Open Service Broker for Cloud Foundry that offers the cluster blueprints of CAPI Navigator",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=26"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node --enable-source-maps dist/main.js",
+    "dev": "tsx watch src/main.ts",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "api:update": "bash scripts/api-update.sh",
+    "api:types": "openapi-typescript api/capi-navigator.openapi.json -o src/capi/schema.generated.ts"
+  },
+  "dependencies": {
+    "@fastify/swagger": "9.9.3",
+    "@fastify/swagger-ui": "6.1.2",
+    "fastify": "5.12.8",
+    "openapi-fetch": "0.17.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "26.6.6",
+    "@typescript/native": "npm:typescript@7.0.2",
+    "@vitest/coverage-v8": "5.1.0",
+    "eslint": "10.14.0",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "17.14.0",
+    "openapi-typescript": "7.13.0",
+    "prettier": "3.9.10",
+    "tsx": "4.23.15",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "typescript-eslint": "8.72.1",
+    "vitest": "5.1.0"
+  }
+}

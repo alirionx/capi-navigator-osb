@@ -1,0 +1,22 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Local environment and credentials – never commit these
+.env
+.env.*
+!.env.example
+*.local.md
+*.kubeconfig
+kubeconfig*
+!*.ts
+*.pem
+*.key
+token
+*.token
+
+# Editors / OS
+.DS_Store
+.idea/
+*.log
