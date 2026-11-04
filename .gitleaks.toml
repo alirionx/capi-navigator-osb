@@ -1,0 +1,20 @@
+# gitleaks configuration for `pnpm secrets:scan` (scripts/secret-scan.sh, ADR-0010).
+# Default rules of the pinned gitleaks version, a rule for CAPI Navigator API tokens, and
+# allowlists for deliberate test fixtures.
+[extend]
+useDefault = true
+
+# The broker's most valuable secret: it can create and delete clusters. CAPI Navigator generates
+# tokens as `capin_` followed by 32 random bytes in base64url (43 characters).
+[[rules]]
+id = "capi-navigator-api-token"
+description = "CAPI Navigator API token"
+regex = '''capin_[A-Za-z0-9_-]{43}'''
+keywords = ["capin_"]
+
+# Deliberate fake values in tests. Matched by value, not by file, so a real secret in the same file
+# is still found. Add a value only after checking that it is not a credential.
+# [[allowlists]]
+# description = "Fake credentials in tests"
+# regexTarget = "secret"
+# regexes = []

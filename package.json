@@ -19,7 +19,9 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "api:update": "bash scripts/api-update.sh",
-    "api:types": "openapi-typescript api/capi-navigator.openapi.json -o src/capi/schema.generated.ts"
+    "api:types": "openapi-typescript api/capi-navigator.openapi.json -o src/capi/schema.generated.ts",
+    "secrets:scan": "bash scripts/secret-scan.sh",
+    "versions:report": "bash scripts/versions-report.sh"
   },
   "dependencies": {
     "@fastify/swagger": "9.9.3",

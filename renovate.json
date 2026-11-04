@@ -1,5 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Used only by `pnpm versions:report` to look up newer versions (ADR-0010): no bot, no pull requests.",
   "extends": ["config:recommended"],
   "minimumReleaseAge": "3 days",
   "packageRules": [
@@ -7,11 +8,24 @@
       "description": "The package name typescript is an alias of the TypeScript 6 API for typescript-eslint; tsc itself is TypeScript 7 (@typescript/native), like CAPI Navigator (its ADR-0001).",
       "matchPackageNames": ["@typescript/typescript6"],
       "allowedVersions": "<7"
+    }
+  ],
+  "customManagers": [
+    {
+      "description": "Versions pinned in scripts, marked with a `# renovate:` comment (secret scan, version report).",
+      "customType": "regex",
+      "managerFilePatterns": ["/^scripts/.+\\.sh$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n[A-Z_]+=\"(?<currentValue>[^\"]+)\""
+      ]
     },
     {
-      "matchUpdateTypes": ["minor", "patch"],
-      "matchDepTypes": ["devDependencies"],
-      "groupName": "dev dependencies (non-major)"
+      "description": "pnpm, pinned only in packageManager of package.json (Dockerfile and workflows read it there).",
+      "customType": "regex",
+      "managerFilePatterns": ["/^package\\.json$/"],
+      "matchStrings": ["\"packageManager\": \"pnpm@(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "pnpm",
+      "datasourceTemplate": "npm"
     }
   ]
 }
