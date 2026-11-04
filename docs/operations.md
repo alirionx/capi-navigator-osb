@@ -136,6 +136,22 @@ cf delete-service my-k8s               # deletes the cluster with cleanup
 The parameters of a plan are listed with `cf marketplace -e kubernetes-cluster`; values outside
 the limits of the blueprint are refused with a message, and nothing is created.
 
+### Kubeconfig as a file
+
+`cf service-key` prints the credentials as JSON, so the kubeconfig appears as one string with `\n`.
+To get it as a YAML file:
+
+```sh
+umask 077   # the file holds an admin credential: readable only by you
+cf service-key my-k8s key | sed -n '/^{/,$p' | jq -r .credentials.kubeconfig > my-k8s.kubeconfig
+kubectl --kubeconfig my-k8s.kubeconfig get nodes
+```
+
+In **Stratos** (Services → instance → Service Keys → expand the key), use the copy icon in the
+`kubeconfig` row: it copies the YAML with its line breaks. "Copy all (JSON)" gives the escaped JSON
+instead. Note that Stratos (5.5) shows the kubeconfig unmasked, including the private key: avoid
+opening it while sharing your screen or taking screenshots.
+
 ## 6. Limits
 
 - **One instance is one cluster.** Creating takes minutes; users see "in progress". There are no
