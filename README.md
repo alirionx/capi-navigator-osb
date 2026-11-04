@@ -33,7 +33,9 @@ See [docs/requirements.md](docs/requirements.md) for the requirements and the pl
 
 ## Development
 
-Requirements: Node.js 26 and pnpm 12 (`npm install --global pnpm@12.16.1`; Node.js 26 has no corepack).
+Requirements: Node.js 26 and pnpm in the version of `packageManager` in `package.json`
+(`npm install --global "$(node -p 'require("./package.json").packageManager')"`; Node.js 26 has no
+corepack).
 
 ```sh
 pnpm install
@@ -41,14 +43,18 @@ cp .env.example .env   # fill in CAPI Navigator URL, token and broker credential
 pnpm dev               # broker on http://localhost:8080, Swagger UI on /docs
 ```
 
-| Command              | What it does                                                    |
-| -------------------- | --------------------------------------------------------------- |
-| `pnpm test`          | Tests against a fake of the CAPI Navigator API                  |
-| `pnpm test:coverage` | Tests with coverage (at least 80 % lines)                       |
-| `pnpm lint`          | ESLint and Prettier                                             |
-| `pnpm typecheck`     | TypeScript                                                      |
-| `pnpm build`         | Compiles to `dist/`; start with `pnpm start`                    |
-| `pnpm api:update`    | Moves the supported CAPI Navigator API to another commit or tag |
+| Command                | What it does                                                                     |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| `pnpm test`            | Tests against a fake of the CAPI Navigator API                                   |
+| `pnpm test:coverage`   | Tests with coverage (at least 80 % lines)                                        |
+| `pnpm lint`            | ESLint and Prettier                                                              |
+| `pnpm typecheck`       | TypeScript                                                                       |
+| `pnpm build`           | Compiles to `dist/`; start with `pnpm start`                                     |
+| `pnpm api:update`      | Moves the supported CAPI Navigator API to another commit or tag                  |
+| `pnpm secrets:scan`    | gitleaks (Docker) over the Git history and the working tree; run before pushing  |
+| `pnpm versions:report` | Looks up newer versions with Renovate (Docker), writes `docs/versions-report.md` |
+
+Keeping versions current and scanning for secrets: [docs/maintenance.md](docs/maintenance.md).
 
 The broker talks to CAPI Navigator only through its REST API, with the token of a technical user.
 The supported API version is pinned in [api/README.md](api/README.md).

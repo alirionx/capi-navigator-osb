@@ -38,8 +38,9 @@ for (const repo of Object.values(report.repositories)) {
 function status(update) {
   if (!update) return 'up to date';
   const age = update.newVersionAgeInDays;
+  const released = age === undefined ? 'recently' : age === 0 ? 'today' : `${age} days ago`;
   const waiting = update.pendingChecks
-    ? ` (released ${age === 0 ? 'today' : `${age} days ago`}; wait for the minimum release age)`
+    ? ` (released ${released}; wait for the minimum release age)`
     : '';
   return `**${update.updateType}**${waiting}`;
 }
