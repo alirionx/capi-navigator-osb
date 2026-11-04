@@ -2,7 +2,12 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ConfigError, loadConfig, type SecretFileWarning } from '../src/config.js';
+import {
+  ConfigError,
+  isLooselyReadable,
+  loadConfig,
+  type SecretFileWarning,
+} from '../src/config.js';
 
 const TOKEN = 'capin_secret-token-value';
 const PASSWORD = 'broker-secret-password';
@@ -118,6 +123,28 @@ describe('loadConfig (OSB0-F-01)', () => {
     expect(c.capi.token).toBe(TOKEN);
     expect(c.broker.password).toBe(PASSWORD);
     expect(warnings).toEqual([{ path: passwordFile, message: expect.stringContaining('600') }]);
+  });
+
+  it('accepts a secret file readable by its own group, as Kubernetes mounts it with fsGroup', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'osb-config-'));
+    const tokenFile = join(dir, 'token');
+    writeFileSync(tokenFile, TOKEN, { mode: 0o640 });
+    const warnings: SecretFileWarning[] = [];
+    loadConfig(
+      { ...base, CAPIN_TOKEN: undefined, CAPIN_TOKEN_FILE: tokenFile },
+      { onWarning: (w) => warnings.push(w) },
+    );
+    expect(warnings).toEqual([]);
+  });
+
+  it.each([
+    [0o600, 1000, false],
+    [0o440, 1000, false],
+    [0o440, 2000, true],
+    [0o604, 1000, true],
+    [0o400, 2000, false],
+  ])('judges mode %o with group %i for a process in group 1000', (mode, gid, loose) => {
+    expect(isLooselyReadable(mode, gid, [1000])).toBe(loose);
   });
 
   it('reports unreadable and empty secret files', () => {

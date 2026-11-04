@@ -120,7 +120,8 @@ mounts them from the Secret as files and sets `CAPIN_TOKEN_FILE` and `BROKER_PAS
 
 - The pod runs as user 1000 with a read-only root file system, no capabilities, no privilege
   escalation, the `RuntimeDefault` seccomp profile and without a service account token.
-- The Secret is mounted with mode 0400. The broker never logs the token, the password or a
+- The Secret is mounted read-only for the pod only (mode 0400; with the `fsGroup` of the pod, Kubernetes
+  makes it 0440 for the pod's own group). The broker never logs the token, the password or a
   kubeconfig.
 - `/healthz`, `/readyz`, `/docs` and `/docs/json` need no authentication; everything under `/v2`
   needs the broker credentials.

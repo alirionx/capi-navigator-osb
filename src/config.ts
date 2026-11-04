@@ -155,14 +155,32 @@ export function loadConfig(env: NodeJS.ProcessEnv, options: LoadOptions = {}): C
   };
 }
 
-/** Reads a secret file and warns if group or others may read it. */
+/**
+ * Whether a secret file is open to other users: any access for others, or group access for a group
+ * the process does not belong to. Group access for an own group is fine: Kubernetes mounts secrets
+ * with fsGroup as 0440 owned by the pod's group, which only the broker's own process holds.
+ */
+export function isLooselyReadable(
+  mode: number,
+  gid: number,
+  ownGroups: readonly number[],
+): boolean {
+  if ((mode & 0o007) !== 0) return true;
+  return (mode & 0o070) !== 0 && !ownGroups.includes(gid);
+}
+
+function ownGroups(): number[] {
+  return process.getgid && process.getgroups ? [process.getgid(), ...process.getgroups()] : [];
+}
+
+/** Reads a secret file and warns if users other than the broker's own may read it. */
 function readSecretFile(onWarning?: (w: SecretFileWarning) => void) {
   return (path: string): string => {
-    const mode = statSync(path).mode & 0o077;
-    if (mode !== 0 && onWarning) {
+    const { mode, gid } = statSync(path);
+    if (onWarning && isLooselyReadable(mode, gid, ownGroups())) {
       onWarning({
         path,
-        message: 'secret file is readable by group or others; use mode 600 or 400',
+        message: 'secret file is readable by other users; use mode 600, 400 or 440',
       });
     }
     return readFileSync(path, 'utf8');
