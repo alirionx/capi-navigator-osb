@@ -60,7 +60,9 @@ export function appDescription(body: ApiErrorBody | undefined, fallback: string)
   const fields = Object.entries(body.fieldErrors ?? {}).map(
     ([field, messages]) => `${field}: ${messages.join(', ')}`,
   );
-  return [body.message + (fields.length ? ` (${fields.join('; ')})` : ''), body.hint]
+  // details names the violated limit, e.g. "parameters.workerPools.default.replicas: Too big:
+  // expected number to be <=5" (found in the live acceptance, OSB4-F-03).
+  return [body.message + (fields.length ? ` (${fields.join('; ')})` : ''), body.details, body.hint]
     .filter(Boolean)
     .join('. ')
     .replace(/\.\./g, '.');

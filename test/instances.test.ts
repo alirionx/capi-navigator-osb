@@ -523,4 +523,19 @@ describe('helpers (ADR-0008)', () => {
       'Blocked. Wait.',
     );
   });
+
+  it('names the violated limit of refused parameters (OSB4-F-03)', () => {
+    expect(
+      appDescription(
+        {
+          statusCode: 400,
+          message: 'The request does not fit the blueprint',
+          details: 'parameters.workerPools.default.replicas: Too big: expected number to be <=5',
+        },
+        'f',
+      ),
+    ).toBe(
+      'The request does not fit the blueprint. parameters.workerPools.default.replicas: Too big: expected number to be <=5',
+    );
+  });
 });
