@@ -187,17 +187,23 @@ Details (unknown instance, `ConcurrencyError`, no binding parameters, unbind wit
 
 ## 5. Acceptance criteria
 
-- [ ] `cf marketplace` shows one plan per blueprint with the parameters from the blueprint.
-- [ ] `cf create-service … -c '{"workerPools":{"default":{"replicas":2}}}'` creates a cluster in
+- [x] `cf marketplace` shows one plan per blueprint with the parameters from the blueprint.
+- [x] `cf create-service … -c '{"workerPools":{"default":{"replicas":2}}}'` creates a cluster in
       CAPI Navigator with the labels of section 3; `cf service` shows "create in progress" and
       later "create succeeded".
-- [ ] Parameters outside the limits are refused with a readable message; nothing is created.
-- [ ] `cf bind-service` (or `cf create-service-key`) returns a kubeconfig that works with
+- [x] Parameters outside the limits are refused with a readable message; nothing is created.
+- [x] `cf bind-service` (or `cf create-service-key`) returns a kubeconfig that works with
       `kubectl get nodes`.
-- [ ] `cf delete-service` deletes the cluster with cleanup; the instance disappears after the
+- [x] `cf delete-service` deletes the cluster with cleanup; the instance disappears after the
       cluster is gone.
-- [ ] Repeating provision, deprovision and bind requests gives the answers the spec demands.
-- [ ] No token, password or kubeconfig appears in the broker's logs.
+- [x] Repeating provision, deprovision and bind requests gives the answers the spec demands.
+- [x] No token, password or kubeconfig appears in the broker's logs.
+
+Accepted on 2026-11-04 with Cloud Foundry (CAPI 3.233, `cloudfoundry/kind-deployment` v0.26.0),
+CAPI Navigator 0.17.0 and clusters on AWS (`aws-k0s-1cp1w` with two workers, `aws-rke2-aio`
+through Stratos). Repeated requests: by the test suite against the fake API; live, Cloud Foundry's
+orphan-mitigation DELETE after a refused order got `410`, and a second `create-service` with the
+same name was refused by Cloud Foundry before reaching the broker.
 
 ## 6. Non-functional requirements
 

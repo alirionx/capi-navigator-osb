@@ -1,7 +1,7 @@
 # CAPI Navigator Service Broker
 
-> **Status:** in development. All OSB endpoints work (packs OSB-0 to OSB-3); packaging, operator
-> documentation and the live acceptance with Cloud Foundry (OSB-4) follow.
+> **Status:** all packs of the requirements are done (OSB-0 to OSB-4), accepted with a real Cloud
+> Foundry and CAPI Navigator 0.17.0. Operators: [docs/operations.md](docs/operations.md).
 
 An [Open Service Broker](https://www.openservicebrokerapi.org/) (API v2.17) that lets Cloud Foundry
 users order Kubernetes clusters from [CAPI Navigator](https://github.com/alirionx/capi-navigator).

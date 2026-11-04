@@ -41,7 +41,7 @@ If this file and `docs/requirements.md` disagree, the requirements win. Point ou
 | OSB-1 | Catalog from the blueprints                               | done    |
 | OSB-2 | Provision, deprovision, last operation                    | done    |
 | OSB-3 | Bind and unbind                                           | done    |
-| OSB-4 | Packaging, documentation, live acceptance with CF         | open    |
+| OSB-4 | Packaging, documentation, live acceptance with CF         | done    |
 
 ## Hard rules
 

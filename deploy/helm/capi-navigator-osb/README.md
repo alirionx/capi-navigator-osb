@@ -30,7 +30,7 @@ kubectl -n capi-navigator-osb create secret generic osb-secrets \
   --from-file=capin-token=./capin-token \
   --from-file=broker-password=./broker-password
 
-helm install osb oci://ghcr.io/alirionx/charts/capi-navigator-osb --version 0.1.0 \
+helm install osb oci://ghcr.io/alirionx/charts/capi-navigator-osb --version 0.2.0 \
   --namespace capi-navigator-osb \
   --set config.CAPIN_URL=https://capi-navigator.example.com \
   --set config.CAPIN_CONNECTION=home \
@@ -53,7 +53,7 @@ The broker listens on plain HTTP (port 8080). Cloud Foundry should reach it over
 Ingress (or another TLS-terminating proxy) handle TLS:
 
 ```sh
-helm upgrade osb oci://ghcr.io/alirionx/charts/capi-navigator-osb --version 0.1.0 \
+helm upgrade osb oci://ghcr.io/alirionx/charts/capi-navigator-osb --version 0.2.0 \
   --namespace capi-navigator-osb --reuse-values \
   --set ingress.enabled=true \
   --set ingress.className=nginx \
