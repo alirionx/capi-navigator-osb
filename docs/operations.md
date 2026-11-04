@@ -94,6 +94,10 @@ the Secret from `secrets.capinToken` and `secrets.brokerPassword`.
    (mode 600, owned by uid 1000, the user of the container).
 3. `docker compose up -d` or `podman compose up -d`.
 
+`localhost` in `CAPIN_URL` is the container itself: for a CAPI Navigator on the same host, use the
+host's address on the container network (Docker: usually `http://172.17.0.1:<port>`, or
+`host.docker.internal` with `extra_hosts`).
+
 ### Docker or Podman without Compose
 
 ```sh
