@@ -1,10 +1,11 @@
 # OSB4-F-01: one image, non-root, works with a read-only root file system (ADR-0002).
 
 FROM node:26-bookworm-slim AS base
-# Node.js 26 ships without corepack; pnpm in the version of package.json.
-RUN npm install --global --no-fund --no-audit pnpm@12.16.1
 WORKDIR /src
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Node.js 26 ships without corepack: pnpm in the version of packageManager in package.json, the
+# only place that pins it (docs/maintenance.md).
+RUN npm install --global --no-fund --no-audit "$(node -p 'require("./package.json").packageManager')"
 
 FROM base AS build
 RUN pnpm install --frozen-lockfile
