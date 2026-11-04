@@ -1,6 +1,6 @@
 {
   "name": "capi-navigator-osb",
-  "version": "0.0.0-dev",
+  "version": "0.1.0",
   "description": "Open Service Broker for Cloud Foundry that offers the cluster blueprints of CAPI Navigator",
   "license": "Apache-2.0",
   "private": true,

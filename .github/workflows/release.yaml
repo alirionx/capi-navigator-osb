@@ -1,8 +1,11 @@
-# Release (NF-04): a tag vX.Y.Z publishes the image ghcr.io/<owner>/capi-navigator-osb:X.Y.Z and
-# the Helm chart as OCI artifact ghcr.io/<owner>/charts/capi-navigator-osb:X.Y.Z.
+# Release (NF-04): a tag vX.Y.Z checks the code, publishes the image
+# ghcr.io/<owner>/capi-navigator-osb:X.Y.Z, the Helm chart as OCI artifact
+# ghcr.io/<owner>/charts/capi-navigator-osb:X.Y.Z and a GitHub release with the notes of
+# docs/release-notes/X.Y.Z.md and the packaged chart.
 #
-# To release: set `version` and `appVersion` in deploy/helm/capi-navigator-osb/Chart.yaml to X.Y.Z,
-# commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
+# To release: set the version X.Y.Z in package.json and in deploy/helm/capi-navigator-osb/Chart.yaml
+# (version and appVersion), write docs/release-notes/X.Y.Z.md, commit, then
+# `git tag vX.Y.Z && git push origin vX.Y.Z`.
 name: Release
 
 on:
@@ -24,21 +27,38 @@ jobs:
   release:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      packages: write
+      contents: write # GitHub release
+      packages: write # image and chart on ghcr.io
     steps:
       - uses: actions/checkout@v7
-      - name: Tag matches Chart.yaml
+      - name: Tag matches package.json, Chart.yaml and release notes
         id: version
         run: |
           version="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p 'require("./package.json").version')"
           chart="$(awk '/^version:/ {print $2}' "$CHART/Chart.yaml")"
           app="$(awk '/^appVersion:/ {print $2}' "$CHART/Chart.yaml")"
-          if [ "$chart" != "$version" ] || [ "$app" != "$version" ]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match Chart.yaml (version $chart, appVersion $app)"
+          if [ "$pkg" != "$version" ] || [ "$chart" != "$version" ] || [ "$app" != "$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json ($pkg) or Chart.yaml (version $chart, appVersion $app)"
+            exit 1
+          fi
+          if [ ! -f "docs/release-notes/$version.md" ]; then
+            echo "::error::docs/release-notes/$version.md is missing"
             exit 1
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      # The same checks as CI: never publish a tag that would fail them.
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      # Node.js 26 ships without corepack: pnpm in the version of package.json.
+      - run: npm install --global pnpm@12.16.1
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test:coverage
+
       - uses: docker/setup-buildx-action@v4
       - uses: docker/login-action@v4
         with:
@@ -57,10 +77,27 @@ jobs:
             org.opencontainers.image.title=capi-navigator-osb
             org.opencontainers.image.description=Open Service Broker for the cluster blueprints of CAPI Navigator
             org.opencontainers.image.licenses=Apache-2.0
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
           build-args: APP_VERSION=${{ steps.version.outputs.version }}
+
       - name: Helm chart as OCI artifact
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           helm package "$CHART" --destination /tmp/chart
-          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
-          helm push /tmp/chart/capi-navigator-osb-${{ steps.version.outputs.version }}.tgz \
+          echo "$GH_TOKEN" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
+          helm push "/tmp/chart/capi-navigator-osb-$VERSION.tgz" \
             "oci://ghcr.io/${{ github.repository_owner }}/charts"
+          (cd /tmp/chart && sha256sum "capi-navigator-osb-$VERSION.tgz" > "capi-navigator-osb-$VERSION.tgz.sha256")
+
+      - name: GitHub release
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" \
+            --notes-file "docs/release-notes/$VERSION.md" \
+            "/tmp/chart/capi-navigator-osb-$VERSION.tgz" \
+            "/tmp/chart/capi-navigator-osb-$VERSION.tgz.sha256"
