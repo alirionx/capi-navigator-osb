@@ -11,8 +11,8 @@ Navigator and is reached by the Cloud Controller.
 
 ## 1. Prepare CAPI Navigator
 
-You need CAPI Navigator with cluster blueprints (FP-34; first release 0.16.0, until then `main`
-at commit `05240f3` or later) and an admin who can manage users and blueprints.
+You need CAPI Navigator 0.16.0 or later (cluster blueprints, FP-34) and an admin who can manage
+users and blueprints.
 
 1. **Blueprints.** Create the blueprints you want to offer on the blueprints page, all on the
    connection the broker will use. Each blueprint becomes one plan; its parameters (workers,

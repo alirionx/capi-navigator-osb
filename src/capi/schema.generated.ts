@@ -1010,6 +1010,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/connections/{connection}/clusters/{namespace}/{name}/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Logs of a workload in a workload cluster (one container, newest lines)
+         * @description Pods are found through the selector of the workload; without pod and container the most interesting pod (not ready, most restarts) and its default container are read. Every access is audited (ADR-0036); not cached.
+         *
+         *     Requires permission `clusters.logs`. Checked in the connection and namespace of the route.
+         */
+        get: operations["WorkloadLogs_logs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/connections/{connection}/clusters/{namespace}/{name}/registry-contents": {
         parameters: {
             query?: never;
@@ -2822,12 +2844,31 @@ export interface components {
             };
             unschedulable: boolean;
         };
+        DashboardRoute: {
+            /** @enum {string} */
+            kind: "Ingress" | "HTTPRoute";
+            name: string;
+            host: string;
+            tls: boolean;
+        };
         DashboardService: {
             namespace: string;
             name: string;
             type: string;
             external: string[];
             ports: string[];
+            endpoints?: {
+                ready: number;
+                total: number;
+            };
+            /** @enum {string} */
+            status: "ok" | "progressing" | "degraded" | "none";
+            workloads: {
+                kind: string;
+                name: string;
+            }[];
+            routes: components["schemas"]["DashboardRoute"][];
+            missing?: boolean;
         };
         DashboardWorkload: {
             /** @enum {string} */
@@ -2995,6 +3036,7 @@ export interface components {
                 image?: components["schemas"]["ImageRef"];
                 rootVolumeGB?: number;
                 rootVolumeType?: string;
+                hostedOn?: string;
             }[];
         };
         Infrastructure: components["schemas"]["OpenStackInfra"] | components["schemas"]["AwsInfra"] | components["schemas"]["GcpInfra"] | components["schemas"]["ProxmoxInfra"];
@@ -3041,6 +3083,14 @@ export interface components {
         KubernetesFlavor: "rke2" | "k0s" | "kubeadm";
         Labels: {
             [key: string]: string;
+        };
+        LogPod: {
+            name: string;
+            phase: string;
+            ready: boolean;
+            restarts: number;
+            node?: string;
+            containers: string[];
         };
         LogoutResponse: {
             endSessionUrl?: string;
@@ -3256,7 +3306,7 @@ export interface components {
             caCert?: string;
         };
         /** @enum {string} */
-        Permission: "view" | "clusters.create" | "clusters.change" | "clusters.delete" | "clusters.kubeconfig" | "nodes.shell" | "addons.manage" | "presets.manage" | "providers.manage" | "credentials.manage" | "connections.manage" | "helmRepositories.manage" | "managementNodes.shell" | "blueprints.manage" | "users.manage";
+        Permission: "view" | "clusters.create" | "clusters.change" | "clusters.delete" | "clusters.kubeconfig" | "clusters.logs" | "nodes.shell" | "addons.manage" | "presets.manage" | "providers.manage" | "credentials.manage" | "connections.manage" | "helmRepositories.manage" | "managementNodes.shell" | "blueprints.manage" | "users.manage";
         PermissionCheck: {
             group: string;
             resource: string;
@@ -3356,6 +3406,8 @@ export interface components {
             }[];
             imageCommands: string;
             unknown: string[];
+            controlPlaneOn?: string;
+            warnings?: string[];
         };
         ReleaseList: {
             versions: string[];
@@ -3451,6 +3503,15 @@ export interface components {
                 maxSurge: number;
                 maxUnavailable: number;
             };
+        };
+        WorkloadLogs: {
+            pods: components["schemas"]["LogPod"][];
+            pod?: string;
+            container?: string;
+            previous: boolean;
+            text: string;
+            truncated: boolean;
+            hint?: string;
         };
         AddonApplyRequestInput: {
             spec: components["schemas"]["AddonSpecInput"];
@@ -6066,6 +6127,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ClusterChangePreview"];
+                };
+            };
+            /** @description Error with message and hint (400 invalid input, 401, 403, 404, 409, 502). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    WorkloadLogs_logs: {
+        parameters: {
+            query: {
+                kind: "Deployment" | "StatefulSet" | "DaemonSet" | "Job" | "Pod";
+                workloadNamespace: string;
+                workload: string;
+                pod?: string;
+                container?: string;
+                tailLines?: number;
+                previous?: "true" | "false";
+            };
+            header?: never;
+            path: {
+                connection: string;
+                namespace: string;
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkloadLogs"];
                 };
             };
             /** @description Error with message and hint (400 invalid input, 401, 403, 404, 409, 502). */

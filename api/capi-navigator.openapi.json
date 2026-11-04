@@ -3029,6 +3029,146 @@
         ]
       }
     },
+    "/api/connections/{connection}/clusters/{namespace}/{name}/logs": {
+      "get": {
+        "operationId": "WorkloadLogs_logs",
+        "tags": [
+          "WorkloadLogs"
+        ],
+        "summary": "Logs of a workload in a workload cluster (one container, newest lines)",
+        "description": "Pods are found through the selector of the workload; without pod and container the most interesting pod (not ready, most restarts) and its default container are read. Every access is audited (ADR-0036); not cached.\n\nRequires permission `clusters.logs`. Checked in the connection and namespace of the route.",
+        "parameters": [
+          {
+            "name": "connection",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Deployment",
+                "StatefulSet",
+                "DaemonSet",
+                "Job",
+                "Pod"
+              ]
+            }
+          },
+          {
+            "name": "workloadNamespace",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 63,
+              "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+            }
+          },
+          {
+            "name": "workload",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 253,
+              "pattern": "^[a-z0-9]([-.a-z0-9]*[a-z0-9])?$"
+            }
+          },
+          {
+            "name": "pod",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 253,
+              "pattern": "^[a-z0-9]([-.a-z0-9]*[a-z0-9])?$"
+            }
+          },
+          {
+            "name": "container",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 63,
+              "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+            }
+          },
+          {
+            "name": "tailLines",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 500,
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 5000
+            }
+          },
+          {
+            "name": "previous",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "false",
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkloadLogs"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error with message and hint (400 invalid input, 401, 403, 404, 409, 502).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "x-permission": [
+          "clusters.logs"
+        ]
+      }
+    },
     "/api/connections/{connection}/clusters/{namespace}/{name}/registry-contents": {
       "get": {
         "operationId": "Clusters_registryContents",
@@ -9393,6 +9533,34 @@
         ],
         "additionalProperties": false
       },
+      "DashboardRoute": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "Ingress",
+              "HTTPRoute"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "host": {
+            "type": "string"
+          },
+          "tls": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind",
+          "name",
+          "host",
+          "tls"
+        ],
+        "additionalProperties": false
+      },
       "DashboardService": {
         "type": "object",
         "properties": {
@@ -9416,6 +9584,59 @@
             "items": {
               "type": "string"
             }
+          },
+          "endpoints": {
+            "type": "object",
+            "properties": {
+              "ready": {
+                "type": "number"
+              },
+              "total": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "ready",
+              "total"
+            ],
+            "additionalProperties": false
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "progressing",
+              "degraded",
+              "none"
+            ]
+          },
+          "workloads": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "routes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardRoute"
+            }
+          },
+          "missing": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -9423,7 +9644,10 @@
           "name",
           "type",
           "external",
-          "ports"
+          "ports",
+          "status",
+          "workloads",
+          "routes"
         ],
         "additionalProperties": false
       },
@@ -10100,6 +10324,9 @@
                 },
                 "rootVolumeType": {
                   "type": "string"
+                },
+                "hostedOn": {
+                  "type": "string"
                 }
               },
               "required": [
@@ -10325,6 +10552,40 @@
           "maxLength": 63,
           "pattern": "^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$"
         }
+      },
+      "LogPod": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "phase": {
+            "type": "string"
+          },
+          "ready": {
+            "type": "boolean"
+          },
+          "restarts": {
+            "type": "number"
+          },
+          "node": {
+            "type": "string"
+          },
+          "containers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "phase",
+          "ready",
+          "restarts",
+          "containers"
+        ],
+        "additionalProperties": false
       },
       "LogoutResponse": {
         "type": "object",
@@ -11085,6 +11346,7 @@
           "clusters.change",
           "clusters.delete",
           "clusters.kubeconfig",
+          "clusters.logs",
           "nodes.shell",
           "addons.manage",
           "presets.manage",
@@ -11496,6 +11758,15 @@
             "type": "string"
           },
           "unknown": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "controlPlaneOn": {
+            "type": "string"
+          },
+          "warnings": {
             "type": "array",
             "items": {
               "type": "string"
@@ -11931,6 +12202,42 @@
           "machineSize",
           "name",
           "replicas"
+        ],
+        "additionalProperties": false
+      },
+      "WorkloadLogs": {
+        "type": "object",
+        "properties": {
+          "pods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LogPod"
+            }
+          },
+          "pod": {
+            "type": "string"
+          },
+          "container": {
+            "type": "string"
+          },
+          "previous": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": "string"
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "hint": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "pods",
+          "previous",
+          "text",
+          "truncated"
         ],
         "additionalProperties": false
       },
@@ -13020,7 +13327,7 @@
             "maxLength": 300
           },
           "permissions": {
-            "maxItems": 15,
+            "maxItems": 16,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Permission"
@@ -14626,7 +14933,7 @@
             "maxLength": 300
           },
           "permissions": {
-            "maxItems": 15,
+            "maxItems": 16,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Permission"
