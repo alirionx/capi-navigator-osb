@@ -2661,6 +2661,7 @@ export interface components {
             managed: boolean;
             credential?: string;
             location?: string;
+            nodeNetwork?: string;
             airGappedRegistry?: string;
             blueprint?: string;
             deletion?: components["schemas"]["DeletionStatus"];

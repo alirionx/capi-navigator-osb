@@ -8778,6 +8778,9 @@
           "location": {
             "type": "string"
           },
+          "nodeNetwork": {
+            "type": "string"
+          },
           "airGappedRegistry": {
             "type": "string"
           },

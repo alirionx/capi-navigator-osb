@@ -3,7 +3,8 @@
 Things the broker needs or would like from CAPI Navigator. The broker does not change CAPI
 Navigator itself (hard rule 6 in `CLAUDE.md`); the user carries these over to its backlog.
 CNR-01 to CNR-03 and CNR-05 were done in CAPI Navigator on 2026-11-04 (commits up to `05240f3`);
-CNR-04 was declined: the broker uses the status endpoint. CNR-06 is open.
+CNR-04 was declined: the broker uses the status endpoint. CNR-06 was done in CAPI Navigator 0.19.0
+(FP34-F-15, its ADR-0038) and accepted live with the broker on 2026-11-09.
 
 ## CNR-01: Document `labelSelector` in the OpenAPI document (done)
 
@@ -43,7 +44,7 @@ first and start the cleanup in the background, so the endpoint answers at once a
 shows in `deletion`. Done in CAPI Navigator commit `05240f3`; the broker's workaround is removed
 ([ADR-0008](adr/0008-service-instances.md)).
 
-## CNR-06: A node network pool for OpenStack blueprints (open)
+## CNR-06: A node network pool for OpenStack blueprints (done)
 
 **Problem.** All clusters of an OpenStack blueprint get the node network of its base spec
 (`docs/blueprints.md`). Some clouds refuse that. On a corporate OpenStack with a routed VRF per
@@ -105,3 +106,9 @@ cluster. Proposed requirement text:
 exhausted pool reaches Cloud Foundry as the app's `409` message (`src/osb/instances.ts`). The
 broker raises its API pin to the release with FP34-F-15, adds a test for that `409` and a note in
 `docs/operations.md`, and repeats the live check with two instances of one OpenStack plan.
+
+**Done** in CAPI Navigator 0.19.0 as FP34-F-15 (ADR-0038): the pool is the blueprint's existing
+`addressPool`, every order gets the first free network of the base spec's size, `409` for a
+used-up pool and `502` when the subnets of the project cannot be read. The API pin of the broker
+moved to v0.19.1; no code change. Accepted live on 2026-11-09 with two instances of one OpenStack
+plan on a cloud that refuses overlapping subnets.

@@ -11,8 +11,8 @@ Navigator and is reached by the Cloud Controller.
 
 ## 1. Prepare CAPI Navigator
 
-You need CAPI Navigator 0.16.0 or later (cluster blueprints, FP-34) and an admin who can manage
-users and blueprints.
+You need CAPI Navigator 0.16.0 or later (cluster blueprints, FP-34; 0.19.0 or later for node
+network pools on OpenStack) and an admin who can manage users and blueprints.
 
 1. **Blueprints.** Create the blueprints you want to offer on the blueprints page, all on the
    connection the broker will use. Each blueprint becomes one plan; its parameters (workers,
@@ -170,6 +170,12 @@ opening it while sharing your screen or taking screenshots.
 - **Capacity.** CAPI Navigator is designed for about 50 clusters per management cluster; the
   broker enforces no limit. Use plan visibility and quotas of Cloud Foundry, and
   `BLUEPRINT_FILTER`.
+- **OpenStack node networks.** Without a pool, all clusters of an OpenStack blueprint share its
+  node network. Clouds that refuse overlapping subnets in a project (e.g. a routed VRF per
+  project) then bring up only the first cluster; the next ones hang in "in progress". Give such
+  blueprints a node network pool in CAPI Navigator (0.19.0 or later). A used-up pool refuses
+  `cf create-service` with a message; a deleted cluster frees its network only when its subnet is
+  gone.
 - **Several CAPI Navigator connections** need several brokers (each with its own `OFFERING_ID`
   and `LABEL_PREFIX`).
 
